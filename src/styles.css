@@ -39,50 +39,50 @@
 :root {
   --radius: 0.75rem;
 
-  /* Deep emerald casino floor */
-  --background: oklch(0.18 0.04 165);
-  --foreground: oklch(0.96 0.02 90);
+  /* Soft black background */
+  --background: oklch(0.16 0.005 240);
+  --foreground: oklch(0.96 0.02 150);
 
-  --card: oklch(0.22 0.05 165);
-  --card-foreground: oklch(0.96 0.02 90);
+  --card: oklch(0.20 0.008 240);
+  --card-foreground: oklch(0.96 0.02 150);
 
-  --popover: oklch(0.22 0.05 165);
-  --popover-foreground: oklch(0.96 0.02 90);
+  --popover: oklch(0.20 0.008 240);
+  --popover-foreground: oklch(0.96 0.02 150);
 
   /* Emerald primary */
   --primary: oklch(0.62 0.18 158);
-  --primary-foreground: oklch(0.12 0.02 165);
+  --primary-foreground: oklch(0.12 0.005 240);
 
-  /* Gold accent */
-  --gold: oklch(0.82 0.15 86);
-  --gold-foreground: oklch(0.18 0.04 165);
+  /* "gold" token now also emerald (kept name for code stability) */
+  --gold: oklch(0.72 0.19 158);
+  --gold-foreground: oklch(0.12 0.005 240);
 
-  --secondary: oklch(0.28 0.05 165);
-  --secondary-foreground: oklch(0.96 0.02 90);
+  --secondary: oklch(0.24 0.01 240);
+  --secondary-foreground: oklch(0.96 0.02 150);
 
-  --muted: oklch(0.26 0.04 165);
-  --muted-foreground: oklch(0.72 0.03 100);
+  --muted: oklch(0.22 0.008 240);
+  --muted-foreground: oklch(0.7 0.02 150);
 
-  --accent: oklch(0.82 0.15 86);
-  --accent-foreground: oklch(0.18 0.04 165);
+  --accent: oklch(0.72 0.19 158);
+  --accent-foreground: oklch(0.12 0.005 240);
 
   --destructive: oklch(0.62 0.22 25);
-  --destructive-foreground: oklch(0.98 0.01 90);
+  --destructive-foreground: oklch(0.98 0.01 150);
 
   --success: oklch(0.7 0.18 150);
-  --success-foreground: oklch(0.12 0.02 165);
+  --success-foreground: oklch(0.12 0.005 240);
 
-  --border: oklch(0.32 0.05 165);
-  --input: oklch(0.28 0.05 165);
-  --ring: oklch(0.82 0.15 86);
+  --border: oklch(0.28 0.01 240);
+  --input: oklch(0.24 0.01 240);
+  --ring: oklch(0.72 0.19 158);
 
-  /* Casino specifics */
-  --gradient-felt: radial-gradient(ellipse at center, oklch(0.28 0.07 158) 0%, oklch(0.16 0.04 165) 70%);
-  --gradient-gold: linear-gradient(135deg, oklch(0.88 0.16 86), oklch(0.72 0.18 78));
-  --gradient-emerald: linear-gradient(135deg, oklch(0.65 0.2 158), oklch(0.45 0.15 165));
-  --shadow-gold: 0 10px 40px -10px oklch(0.82 0.15 86 / 0.45);
+  /* Casino specifics — emerald-on-black */
+  --gradient-felt: radial-gradient(ellipse at center, oklch(0.22 0.04 158) 0%, oklch(0.14 0.005 240) 75%);
+  --gradient-gold: linear-gradient(135deg, oklch(0.78 0.2 158), oklch(0.55 0.18 162));
+  --gradient-emerald: linear-gradient(135deg, oklch(0.65 0.2 158), oklch(0.42 0.15 165));
+  --shadow-gold: 0 10px 40px -10px oklch(0.72 0.19 158 / 0.5);
   --shadow-emerald: 0 10px 40px -10px oklch(0.62 0.18 158 / 0.5);
-  --shadow-inner-felt: inset 0 2px 20px oklch(0.1 0.03 165 / 0.6);
+  --shadow-inner-felt: inset 0 2px 20px oklch(0.08 0.005 240 / 0.7);
 }
 
 @layer base {
@@ -130,7 +130,7 @@
     box-shadow: var(--shadow-inner-felt);
   }
   .glow-gold {
-    text-shadow: 0 0 20px oklch(0.82 0.15 86 / 0.6);
+    text-shadow: 0 0 20px oklch(0.72 0.19 158 / 0.55);
   }
   .ring-gold {
     box-shadow: 0 0 0 2px var(--gold), 0 0 24px oklch(0.82 0.15 86 / 0.4);
@@ -141,8 +141,8 @@
   to { transform: rotate(360deg); }
 }
 @keyframes pulse-gold {
-  0%, 100% { box-shadow: 0 0 0 0 oklch(0.82 0.15 86 / 0.6); }
-  50% { box-shadow: 0 0 0 12px oklch(0.82 0.15 86 / 0); }
+  0%, 100% { box-shadow: 0 0 0 0 oklch(0.72 0.19 158 / 0.6); }
+  50% { box-shadow: 0 0 0 12px oklch(0.72 0.19 158 / 0); }
 }
 @keyframes float-up {
   0% { opacity: 0; transform: translateY(10px); }
