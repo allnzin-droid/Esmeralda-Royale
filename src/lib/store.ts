@@ -61,7 +61,11 @@ const K = {
   deposits: "casino.deposits",
   withdrawals: "casino.withdrawals",
   history: "casino.history",
+  adminPin: "casino.admin.pin",
+  adminPinUnlock: "casino.admin.pin.unlock", // timestamp ms até quando o PIN está liberado
 };
+
+const PIN_TTL_MS = 5 * 60 * 1000; // 5 minutos de "sessão segura" após confirmar PIN
 
 function read<T>(k: string, fallback: T): T {
   if (typeof window === "undefined") return fallback;
