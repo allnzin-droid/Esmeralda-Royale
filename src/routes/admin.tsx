@@ -7,6 +7,7 @@ import {
   adjustBalance,
   addDepositMessage,
   addWithdrawMessage,
+  adminPin,
   type DepositRequest,
   type WithdrawRequest,
 } from "@/lib/store";
@@ -15,8 +16,9 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { RequestThread } from "@/components/RequestThread";
+import { AdminPinGate, useAdminConfirm } from "@/components/AdminPinGate";
 import { toast } from "sonner";
-import { Check, X, Coins, ChevronDown, ChevronUp, KeyRound } from "lucide-react";
+import { Check, X, Coins, ChevronDown, ChevronUp, KeyRound, ShieldCheck, ShieldAlert, Lock } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
