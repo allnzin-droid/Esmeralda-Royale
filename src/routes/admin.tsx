@@ -7,6 +7,7 @@ import {
   adjustBalance,
   addDepositMessage,
   addWithdrawMessage,
+  adminPin,
   type DepositRequest,
   type WithdrawRequest,
 } from "@/lib/store";
@@ -15,8 +16,9 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { RequestThread } from "@/components/RequestThread";
+import { AdminPinGate, useAdminConfirm } from "@/components/AdminPinGate";
 import { toast } from "sonner";
-import { Check, X, Coins, ChevronDown, ChevronUp, KeyRound } from "lucide-react";
+import { Check, X, Coins, ChevronDown, ChevronUp, KeyRound, ShieldCheck, ShieldAlert, Lock } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
@@ -40,9 +42,12 @@ function AdminPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
-      <div>
-        <h1 className="font-display text-3xl text-primary glow-gold">Painel Admin</h1>
-        <p className="text-sm text-muted-foreground">Gerencie depósitos, saques e usuários</p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="font-display text-3xl text-primary glow-gold">Painel Admin</h1>
+          <p className="text-sm text-muted-foreground">Gerencie depósitos, saques e usuários</p>
+        </div>
+        <AdminPinStatus />
       </div>
 
       <Tabs defaultValue="deposits">
@@ -99,6 +104,7 @@ function StatusPill({ status }: { status: string }) {
 function DepositCard({ d }: { d: DepositRequest }) {
   const [open, setOpen] = useState(d.status === "pending" || d.status === "awaiting_payment");
   const [pixKey, setPixKey] = useState(d.pixKey || "");
+  const { request, node } = useAdminConfirm();
 
   const sendPix = () => {
     if (!pixKey.trim()) return toast.error("Informe a chave PIX");
@@ -112,7 +118,7 @@ function DepositCard({ d }: { d: DepositRequest }) {
     toast.success("Chave PIX enviada ao usuário");
   };
 
-  const approve = () => {
+  const doApprove = () => {
     const list = store.getDeposits();
     const i = list.findIndex((x) => x.id === d.id);
     if (i === -1) return;
@@ -123,7 +129,7 @@ function DepositCard({ d }: { d: DepositRequest }) {
     addDepositMessage(d.id, { from: "admin", text: `Depósito aprovado. ${d.amount} moedas creditadas.` });
     toast.success(`+${d.amount} para ${d.userEmail}`);
   };
-  const reject = () => {
+  const doReject = () => {
     const list = store.getDeposits();
     const i = list.findIndex((x) => x.id === d.id);
     if (i === -1) return;
@@ -134,8 +140,22 @@ function DepositCard({ d }: { d: DepositRequest }) {
     toast("Pedido rejeitado");
   };
 
+  const approve = () =>
+    request(doApprove, {
+      title: "Aprovar depósito",
+      description: `Confirme a aprovação de ${d.amount} moedas para ${d.userEmail}.`,
+      force: true,
+    });
+  const reject = () =>
+    request(doReject, {
+      title: "Rejeitar depósito",
+      description: `Confirme a rejeição do pedido de ${d.userEmail}.`,
+      force: true,
+    });
+
   return (
     <Card className="border-primary/20 bg-card/80">
+      {node}
       <button onClick={() => setOpen(!open)} className="w-full p-4 flex items-center justify-between text-left">
         <div className="flex-1">
           <div className="font-medium flex items-center gap-2">{d.userEmail} <StatusPill status={d.status} /></div>
@@ -169,7 +189,7 @@ function DepositCard({ d }: { d: DepositRequest }) {
             <div className="flex gap-2 justify-end pt-2 border-t border-border">
               <Button size="sm" variant="destructive" onClick={reject}><X className="h-4 w-4" /> Rejeitar</Button>
               <Button size="sm" className="bg-success text-success-foreground hover:bg-success/90" onClick={approve}>
-                <Check className="h-4 w-4" /> Aprovar e creditar
+                <ShieldCheck className="h-4 w-4" /> Aprovar e creditar
               </Button>
             </div>
           )}
@@ -181,8 +201,9 @@ function DepositCard({ d }: { d: DepositRequest }) {
 
 function WithdrawCard({ w }: { w: WithdrawRequest }) {
   const [open, setOpen] = useState(w.status === "pending");
+  const { request, node } = useAdminConfirm();
 
-  const approve = () => {
+  const doApprove = () => {
     const users = store.getUsers();
     const u = users.find((x) => x.id === w.userId);
     if (!u) return toast.error("Usuário não encontrado");
@@ -196,7 +217,7 @@ function WithdrawCard({ w }: { w: WithdrawRequest }) {
     addWithdrawMessage(w.id, { from: "admin", text: `Saque de ${w.amount} aprovado e pago via PIX (${w.pixKey}).` });
     toast.success("Saque aprovado");
   };
-  const reject = () => {
+  const doReject = () => {
     const list = store.getWithdrawals();
     const i = list.findIndex((x) => x.id === w.id);
     list[i].status = "rejected";
@@ -206,8 +227,22 @@ function WithdrawCard({ w }: { w: WithdrawRequest }) {
     toast("Saque rejeitado");
   };
 
+  const approve = () =>
+    request(doApprove, {
+      title: "Aprovar saque",
+      description: `Confirme o saque de ${w.amount} via PIX (${w.pixKey}) para ${w.userEmail}.`,
+      force: true,
+    });
+  const reject = () =>
+    request(doReject, {
+      title: "Rejeitar saque",
+      description: `Confirme a rejeição do saque de ${w.userEmail}.`,
+      force: true,
+    });
+
   return (
     <Card className="border-primary/20 bg-card/80">
+      {node}
       <button onClick={() => setOpen(!open)} className="w-full p-4 flex items-center justify-between text-left">
         <div className="flex-1">
           <div className="font-medium flex items-center gap-2">{w.userEmail} <StatusPill status={w.status} /></div>
@@ -228,7 +263,7 @@ function WithdrawCard({ w }: { w: WithdrawRequest }) {
             <div className="flex gap-2 justify-end pt-2 border-t border-border">
               <Button size="sm" variant="destructive" onClick={reject}><X className="h-4 w-4" /> Rejeitar</Button>
               <Button size="sm" className="bg-success text-success-foreground hover:bg-success/90" onClick={approve}>
-                <Check className="h-4 w-4" /> Aprovar e debitar
+                <ShieldCheck className="h-4 w-4" /> Aprovar e debitar
               </Button>
             </div>
           )}
@@ -240,15 +275,26 @@ function WithdrawCard({ w }: { w: WithdrawRequest }) {
 
 function UserRow({ userId, email, name, balance }: { userId: string; email: string; name: string; balance: number }) {
   const [delta, setDelta] = useState("");
+  const { request, node } = useAdminConfirm();
   const apply = () => {
     const v = parseFloat(delta);
     if (!v) return toast.error("Informe um valor");
-    adjustBalance(userId, v, { type: "adjust", note: "Ajuste manual admin" });
-    toast.success(`Ajuste de ${v} aplicado`);
-    setDelta("");
+    request(
+      () => {
+        adjustBalance(userId, v, { type: "adjust", note: "Ajuste manual admin" });
+        toast.success(`Ajuste de ${v} aplicado`);
+        setDelta("");
+      },
+      {
+        title: "Confirmar ajuste de saldo",
+        description: `Aplicar ${v > 0 ? "+" : ""}${v} ao saldo de ${email}.`,
+        force: true,
+      },
+    );
   };
   return (
     <Card className="p-4 flex items-center justify-between border-border bg-card/80">
+      {node}
       <div>
         <div className="font-medium">{name} <span className="text-muted-foreground text-sm">· {email}</span></div>
         <div className="text-sm text-primary font-mono flex items-center gap-1"><Coins className="h-3.5 w-3.5" />{balance.toFixed(2)}</div>
@@ -257,6 +303,84 @@ function UserRow({ userId, email, name, balance }: { userId: string; email: stri
         <Input className="w-28" placeholder="±valor" value={delta} onChange={(e) => setDelta(e.target.value)} type="number" />
         <Button size="sm" variant="outline" className="border-primary/40 text-primary hover:bg-primary/10" onClick={apply}>Ajustar</Button>
       </div>
+    </Card>
+  );
+}
+
+// ===== Status do PIN admin (gerenciamento + indicador) =====
+function AdminPinStatus() {
+  const [, force] = useState(0);
+  const [setupOpen, setSetupOpen] = useState(false);
+
+  // Atualiza a cada 30s para refletir expiração do unlock
+  useEffect(() => {
+    const t = setInterval(() => force((n) => n + 1), 30_000);
+    const h = () => force((n) => n + 1);
+    window.addEventListener("casino:update", h);
+    return () => {
+      clearInterval(t);
+      window.removeEventListener("casino:update", h);
+    };
+  }, []);
+
+  const hasPin = adminPin.isSet();
+  const unlocked = adminPin.isUnlocked();
+  const remainMin = Math.ceil(adminPin.remainingMs() / 60000);
+
+  return (
+    <Card className="px-3 py-2 flex items-center gap-3 border-primary/30 bg-card/80">
+      {hasPin ? (
+        unlocked ? (
+          <span className="flex items-center gap-1.5 text-xs text-success">
+            <ShieldCheck className="h-4 w-4" /> Modo seguro: {remainMin} min
+          </span>
+        ) : (
+          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Lock className="h-4 w-4" /> PIN ativo · pedirá confirmação
+          </span>
+        )
+      ) : (
+        <span className="flex items-center gap-1.5 text-xs text-amber-400">
+          <ShieldAlert className="h-4 w-4" /> PIN não configurado
+        </span>
+      )}
+      <div className="flex gap-1">
+        {hasPin && unlocked && (
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-7 text-xs"
+            onClick={() => {
+              adminPin.lock();
+              toast("Modo seguro encerrado");
+            }}
+          >
+            Bloquear
+          </Button>
+        )}
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-7 text-xs border-primary/40 text-primary"
+          onClick={() => {
+            if (hasPin) {
+              adminPin.clear();
+              adminPin.lock();
+              toast("PIN removido. Configure um novo.");
+            }
+            setSetupOpen(true);
+          }}
+        >
+          {hasPin ? "Trocar PIN" : "Definir PIN"}
+        </Button>
+      </div>
+      <AdminPinGate
+        open={setupOpen}
+        onClose={() => setSetupOpen(false)}
+        onConfirm={() => {}}
+        title="Configurar PIN administrativo"
+        description="Defina um PIN de 4 dígitos para confirmar aprovações."
+      />
     </Card>
   );
 }
