@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Coins, ArrowLeft } from "lucide-react";
+import { GameHistory } from "@/components/GameHistory";
 
 export function GameLayout({
   title,
@@ -58,6 +59,7 @@ export function GameLayout({
           </Button>
         </div>
       </div>
+      <GameHistory game={title} />
     </div>
   );
 }
