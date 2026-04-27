@@ -9,38 +9,180 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as GamesSlotsRouteImport } from './routes/games.slots'
+import { Route as GamesRouletteRouteImport } from './routes/games.roulette'
+import { Route as GamesLuckyRouteImport } from './routes/games.lucky'
+import { Route as GamesCrashRouteImport } from './routes/games.crash'
+import { Route as GamesCoinRouteImport } from './routes/games.coin'
+import { Route as GamesBoxesRouteImport } from './routes/games.boxes'
 
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GamesSlotsRoute = GamesSlotsRouteImport.update({
+  id: '/games/slots',
+  path: '/games/slots',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GamesRouletteRoute = GamesRouletteRouteImport.update({
+  id: '/games/roulette',
+  path: '/games/roulette',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GamesLuckyRoute = GamesLuckyRouteImport.update({
+  id: '/games/lucky',
+  path: '/games/lucky',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GamesCrashRoute = GamesCrashRouteImport.update({
+  id: '/games/crash',
+  path: '/games/crash',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GamesCoinRoute = GamesCoinRouteImport.update({
+  id: '/games/coin',
+  path: '/games/coin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GamesBoxesRoute = GamesBoxesRouteImport.update({
+  id: '/games/boxes',
+  path: '/games/boxes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/auth': typeof AuthRoute
+  '/dashboard': typeof DashboardRoute
+  '/games/boxes': typeof GamesBoxesRoute
+  '/games/coin': typeof GamesCoinRoute
+  '/games/crash': typeof GamesCrashRoute
+  '/games/lucky': typeof GamesLuckyRoute
+  '/games/roulette': typeof GamesRouletteRoute
+  '/games/slots': typeof GamesSlotsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/auth': typeof AuthRoute
+  '/dashboard': typeof DashboardRoute
+  '/games/boxes': typeof GamesBoxesRoute
+  '/games/coin': typeof GamesCoinRoute
+  '/games/crash': typeof GamesCrashRoute
+  '/games/lucky': typeof GamesLuckyRoute
+  '/games/roulette': typeof GamesRouletteRoute
+  '/games/slots': typeof GamesSlotsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/auth': typeof AuthRoute
+  '/dashboard': typeof DashboardRoute
+  '/games/boxes': typeof GamesBoxesRoute
+  '/games/coin': typeof GamesCoinRoute
+  '/games/crash': typeof GamesCrashRoute
+  '/games/lucky': typeof GamesLuckyRoute
+  '/games/roulette': typeof GamesRouletteRoute
+  '/games/slots': typeof GamesSlotsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/auth'
+    | '/dashboard'
+    | '/games/boxes'
+    | '/games/coin'
+    | '/games/crash'
+    | '/games/lucky'
+    | '/games/roulette'
+    | '/games/slots'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/admin'
+    | '/auth'
+    | '/dashboard'
+    | '/games/boxes'
+    | '/games/coin'
+    | '/games/crash'
+    | '/games/lucky'
+    | '/games/roulette'
+    | '/games/slots'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/auth'
+    | '/dashboard'
+    | '/games/boxes'
+    | '/games/coin'
+    | '/games/crash'
+    | '/games/lucky'
+    | '/games/roulette'
+    | '/games/slots'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
+  AuthRoute: typeof AuthRoute
+  DashboardRoute: typeof DashboardRoute
+  GamesBoxesRoute: typeof GamesBoxesRoute
+  GamesCoinRoute: typeof GamesCoinRoute
+  GamesCrashRoute: typeof GamesCrashRoute
+  GamesLuckyRoute: typeof GamesLuckyRoute
+  GamesRouletteRoute: typeof GamesRouletteRoute
+  GamesSlotsRoute: typeof GamesSlotsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +190,62 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/games/slots': {
+      id: '/games/slots'
+      path: '/games/slots'
+      fullPath: '/games/slots'
+      preLoaderRoute: typeof GamesSlotsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/games/roulette': {
+      id: '/games/roulette'
+      path: '/games/roulette'
+      fullPath: '/games/roulette'
+      preLoaderRoute: typeof GamesRouletteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/games/lucky': {
+      id: '/games/lucky'
+      path: '/games/lucky'
+      fullPath: '/games/lucky'
+      preLoaderRoute: typeof GamesLuckyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/games/crash': {
+      id: '/games/crash'
+      path: '/games/crash'
+      fullPath: '/games/crash'
+      preLoaderRoute: typeof GamesCrashRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/games/coin': {
+      id: '/games/coin'
+      path: '/games/coin'
+      fullPath: '/games/coin'
+      preLoaderRoute: typeof GamesCoinRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/games/boxes': {
+      id: '/games/boxes'
+      path: '/games/boxes'
+      fullPath: '/games/boxes'
+      preLoaderRoute: typeof GamesBoxesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
+  AuthRoute: AuthRoute,
+  DashboardRoute: DashboardRoute,
+  GamesBoxesRoute: GamesBoxesRoute,
+  GamesCoinRoute: GamesCoinRoute,
+  GamesCrashRoute: GamesCrashRoute,
+  GamesLuckyRoute: GamesLuckyRoute,
+  GamesRouletteRoute: GamesRouletteRoute,
+  GamesSlotsRoute: GamesSlotsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
