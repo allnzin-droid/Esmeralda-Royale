@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { store, type User, type DepositRequest, type HistoryEntry } from "./store";
+import { store, type User, type DepositRequest, type WithdrawRequest, type HistoryEntry } from "./store";
 
 function useStoreSync<T>(getter: () => T): T {
   const [v, setV] = useState<T>(getter);
@@ -18,4 +18,6 @@ function useStoreSync<T>(getter: () => T): T {
 
 export const useUsers = () => useStoreSync<User[]>(store.getUsers);
 export const useDeposits = () => useStoreSync<DepositRequest[]>(store.getDeposits);
+export const useWithdrawals = () => useStoreSync<WithdrawRequest[]>(store.getWithdrawals);
 export const useHistory = () => useStoreSync<HistoryEntry[]>(store.getHistory);
+

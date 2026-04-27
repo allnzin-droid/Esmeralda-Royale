@@ -122,3 +122,19 @@ export function adjustBalance(userId: string, delta: number, opts: { type: Histo
   addHistory({ userId, type: opts.type, game: opts.game, amount: delta, balanceAfter: newBal, note: opts.note });
   return users[idx];
 }
+
+export function addDepositMessage(id: string, msg: Omit<RequestMessage, "id" | "createdAt">) {
+  const list = store.getDeposits();
+  const i = list.findIndex((d) => d.id === id);
+  if (i === -1) return;
+  list[i].messages = [...(list[i].messages || []), { ...msg, id: uid(), createdAt: Date.now() }];
+  store.setDeposits(list);
+}
+
+export function addWithdrawMessage(id: string, msg: Omit<RequestMessage, "id" | "createdAt">) {
+  const list = store.getWithdrawals();
+  const i = list.findIndex((w) => w.id === id);
+  if (i === -1) return;
+  list[i].messages = [...(list[i].messages || []), { ...msg, id: uid(), createdAt: Date.now() }];
+  store.setWithdrawals(list);
+}
