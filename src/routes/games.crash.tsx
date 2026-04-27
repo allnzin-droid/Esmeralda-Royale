@@ -25,7 +25,7 @@ function Crash() {
   const [cashedAt, setCashedAt] = useState<number | null>(null);
   const crashRef = useRef<number>(1);
   const startRef = useRef<number>(0);
-  const rafRef = useRef<number>();
+  const rafRef = useRef<number | null>(null);
   const { placeBet, payout } = useBet("Crash");
 
   const start = () => {
