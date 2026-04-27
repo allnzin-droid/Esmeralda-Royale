@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -20,6 +21,11 @@ import { Route as GamesCrashRouteImport } from './routes/games.crash'
 import { Route as GamesCoinRouteImport } from './routes/games.coin'
 import { Route as GamesBoxesRouteImport } from './routes/games.boxes'
 
+const MessagesRoute = MessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -76,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
+  '/messages': typeof MessagesRoute
   '/games/boxes': typeof GamesBoxesRoute
   '/games/coin': typeof GamesCoinRoute
   '/games/crash': typeof GamesCrashRoute
@@ -88,6 +95,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
+  '/messages': typeof MessagesRoute
   '/games/boxes': typeof GamesBoxesRoute
   '/games/coin': typeof GamesCoinRoute
   '/games/crash': typeof GamesCrashRoute
@@ -101,6 +109,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
+  '/messages': typeof MessagesRoute
   '/games/boxes': typeof GamesBoxesRoute
   '/games/coin': typeof GamesCoinRoute
   '/games/crash': typeof GamesCrashRoute
@@ -115,6 +124,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/dashboard'
+    | '/messages'
     | '/games/boxes'
     | '/games/coin'
     | '/games/crash'
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/dashboard'
+    | '/messages'
     | '/games/boxes'
     | '/games/coin'
     | '/games/crash'
@@ -139,6 +150,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/dashboard'
+    | '/messages'
     | '/games/boxes'
     | '/games/coin'
     | '/games/crash'
@@ -152,6 +164,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
   DashboardRoute: typeof DashboardRoute
+  MessagesRoute: typeof MessagesRoute
   GamesBoxesRoute: typeof GamesBoxesRoute
   GamesCoinRoute: typeof GamesCoinRoute
   GamesCrashRoute: typeof GamesCrashRoute
@@ -162,6 +175,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/messages': {
+      id: '/messages'
+      path: '/messages'
+      fullPath: '/messages'
+      preLoaderRoute: typeof MessagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -240,6 +260,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
   DashboardRoute: DashboardRoute,
+  MessagesRoute: MessagesRoute,
   GamesBoxesRoute: GamesBoxesRoute,
   GamesCoinRoute: GamesCoinRoute,
   GamesCrashRoute: GamesCrashRoute,

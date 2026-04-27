@@ -12,15 +12,36 @@ export type User = {
   createdAt: number;
 };
 
+export type RequestMessage = {
+  id: string;
+  from: "user" | "admin";
+  text?: string;
+  attachment?: { name: string; dataUrl: string }; // base64 (comprovante)
+  createdAt: number;
+};
+
 export type DepositRequest = {
   id: string;
   userId: string;
   userEmail: string;
   amount: number;
+  status: "pending" | "awaiting_payment" | "approved" | "rejected";
+  createdAt: number;
+  resolvedAt?: number;
+  pixKey?: string; // chave PIX enviada pelo admin
+  messages?: RequestMessage[];
+};
+
+export type WithdrawRequest = {
+  id: string;
+  userId: string;
+  userEmail: string;
+  amount: number;
+  pixKey: string;
   status: "pending" | "approved" | "rejected";
   createdAt: number;
   resolvedAt?: number;
-  adminMessage?: string;
+  messages?: RequestMessage[];
 };
 
 export type HistoryEntry = {
@@ -38,6 +59,7 @@ const K = {
   users: "casino.users",
   session: "casino.session",
   deposits: "casino.deposits",
+  withdrawals: "casino.withdrawals",
   history: "casino.history",
 };
 
@@ -69,6 +91,10 @@ export const store = {
   getDeposits: () => read<DepositRequest[]>(K.deposits, []),
   setDeposits: (d: DepositRequest[]) => write(K.deposits, d),
 
+  // withdrawals
+  getWithdrawals: () => read<WithdrawRequest[]>(K.withdrawals, []),
+  setWithdrawals: (w: WithdrawRequest[]) => write(K.withdrawals, w),
+
   // history
   getHistory: () => read<HistoryEntry[]>(K.history, []),
   setHistory: (h: HistoryEntry[]) => write(K.history, h),
@@ -95,4 +121,20 @@ export function adjustBalance(userId: string, delta: number, opts: { type: Histo
   store.setUsers(users);
   addHistory({ userId, type: opts.type, game: opts.game, amount: delta, balanceAfter: newBal, note: opts.note });
   return users[idx];
+}
+
+export function addDepositMessage(id: string, msg: Omit<RequestMessage, "id" | "createdAt">) {
+  const list = store.getDeposits();
+  const i = list.findIndex((d) => d.id === id);
+  if (i === -1) return;
+  list[i].messages = [...(list[i].messages || []), { ...msg, id: uid(), createdAt: Date.now() }];
+  store.setDeposits(list);
+}
+
+export function addWithdrawMessage(id: string, msg: Omit<RequestMessage, "id" | "createdAt">) {
+  const list = store.getWithdrawals();
+  const i = list.findIndex((w) => w.id === id);
+  if (i === -1) return;
+  list[i].messages = [...(list[i].messages || []), { ...msg, id: uid(), createdAt: Date.now() }];
+  store.setWithdrawals(list);
 }
