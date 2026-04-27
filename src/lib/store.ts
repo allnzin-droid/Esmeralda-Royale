@@ -106,6 +106,21 @@ export const store = {
 
 export const isAdmin = (u?: User | null) => !!u && u.email.toLowerCase() === ADMIN_EMAIL;
 
+// ===== Admin PIN (2-step confirmation) =====
+export const adminPin = {
+  isSet: () => !!read<string | null>(K.adminPin, null),
+  set: (pin: string) => write(K.adminPin, pin),
+  clear: () => write(K.adminPin, null),
+  verify: (pin: string) => read<string | null>(K.adminPin, null) === pin,
+  unlock: () => write(K.adminPinUnlock, Date.now() + PIN_TTL_MS),
+  isUnlocked: () => {
+    const t = read<number>(K.adminPinUnlock, 0);
+    return typeof t === "number" && t > Date.now();
+  },
+  lock: () => write(K.adminPinUnlock, 0),
+  remainingMs: () => Math.max(0, read<number>(K.adminPinUnlock, 0) - Date.now()),
+};
+
 export function uid() {
   return Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
 }
