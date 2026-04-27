@@ -104,6 +104,7 @@ function StatusPill({ status }: { status: string }) {
 function DepositCard({ d }: { d: DepositRequest }) {
   const [open, setOpen] = useState(d.status === "pending" || d.status === "awaiting_payment");
   const [pixKey, setPixKey] = useState(d.pixKey || "");
+  const { request, node } = useAdminConfirm();
 
   const sendPix = () => {
     if (!pixKey.trim()) return toast.error("Informe a chave PIX");
@@ -117,7 +118,7 @@ function DepositCard({ d }: { d: DepositRequest }) {
     toast.success("Chave PIX enviada ao usuário");
   };
 
-  const approve = () => {
+  const doApprove = () => {
     const list = store.getDeposits();
     const i = list.findIndex((x) => x.id === d.id);
     if (i === -1) return;
@@ -128,7 +129,7 @@ function DepositCard({ d }: { d: DepositRequest }) {
     addDepositMessage(d.id, { from: "admin", text: `Depósito aprovado. ${d.amount} moedas creditadas.` });
     toast.success(`+${d.amount} para ${d.userEmail}`);
   };
-  const reject = () => {
+  const doReject = () => {
     const list = store.getDeposits();
     const i = list.findIndex((x) => x.id === d.id);
     if (i === -1) return;
@@ -139,8 +140,22 @@ function DepositCard({ d }: { d: DepositRequest }) {
     toast("Pedido rejeitado");
   };
 
+  const approve = () =>
+    request(doApprove, {
+      title: "Aprovar depósito",
+      description: `Confirme a aprovação de ${d.amount} moedas para ${d.userEmail}.`,
+      force: true,
+    });
+  const reject = () =>
+    request(doReject, {
+      title: "Rejeitar depósito",
+      description: `Confirme a rejeição do pedido de ${d.userEmail}.`,
+      force: true,
+    });
+
   return (
     <Card className="border-primary/20 bg-card/80">
+      {node}
       <button onClick={() => setOpen(!open)} className="w-full p-4 flex items-center justify-between text-left">
         <div className="flex-1">
           <div className="font-medium flex items-center gap-2">{d.userEmail} <StatusPill status={d.status} /></div>
@@ -174,7 +189,7 @@ function DepositCard({ d }: { d: DepositRequest }) {
             <div className="flex gap-2 justify-end pt-2 border-t border-border">
               <Button size="sm" variant="destructive" onClick={reject}><X className="h-4 w-4" /> Rejeitar</Button>
               <Button size="sm" className="bg-success text-success-foreground hover:bg-success/90" onClick={approve}>
-                <Check className="h-4 w-4" /> Aprovar e creditar
+                <ShieldCheck className="h-4 w-4" /> Aprovar e creditar
               </Button>
             </div>
           )}
