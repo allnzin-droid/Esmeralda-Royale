@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ADMIN_EMAIL } from "@/lib/store";
+
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
@@ -77,9 +77,6 @@ function AuthPage() {
             </form>
           </TabsContent>
         </Tabs>
-        <p className="mt-6 text-xs text-muted-foreground text-center">
-          Admin: cadastre-se com <span className="text-gold font-mono">{ADMIN_EMAIL}</span>
-        </p>
       </div>
     </div>
   );

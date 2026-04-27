@@ -130,7 +130,7 @@
     box-shadow: var(--shadow-inner-felt);
   }
   .glow-gold {
-    text-shadow: 0 0 20px oklch(0.82 0.15 86 / 0.6);
+    text-shadow: 0 0 20px oklch(0.72 0.19 158 / 0.55);
   }
   .ring-gold {
     box-shadow: 0 0 0 2px var(--gold), 0 0 24px oklch(0.82 0.15 86 / 0.4);
@@ -141,8 +141,8 @@
   to { transform: rotate(360deg); }
 }
 @keyframes pulse-gold {
-  0%, 100% { box-shadow: 0 0 0 0 oklch(0.82 0.15 86 / 0.6); }
-  50% { box-shadow: 0 0 0 12px oklch(0.82 0.15 86 / 0); }
+  0%, 100% { box-shadow: 0 0 0 0 oklch(0.72 0.19 158 / 0.6); }
+  50% { box-shadow: 0 0 0 12px oklch(0.72 0.19 158 / 0); }
 }
 @keyframes float-up {
   0% { opacity: 0; transform: translateY(10px); }
