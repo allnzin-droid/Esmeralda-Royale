@@ -12,15 +12,36 @@ export type User = {
   createdAt: number;
 };
 
+export type RequestMessage = {
+  id: string;
+  from: "user" | "admin";
+  text?: string;
+  attachment?: { name: string; dataUrl: string }; // base64 (comprovante)
+  createdAt: number;
+};
+
 export type DepositRequest = {
   id: string;
   userId: string;
   userEmail: string;
   amount: number;
+  status: "pending" | "awaiting_payment" | "approved" | "rejected";
+  createdAt: number;
+  resolvedAt?: number;
+  pixKey?: string; // chave PIX enviada pelo admin
+  messages?: RequestMessage[];
+};
+
+export type WithdrawRequest = {
+  id: string;
+  userId: string;
+  userEmail: string;
+  amount: number;
+  pixKey: string;
   status: "pending" | "approved" | "rejected";
   createdAt: number;
   resolvedAt?: number;
-  adminMessage?: string;
+  messages?: RequestMessage[];
 };
 
 export type HistoryEntry = {
@@ -38,6 +59,7 @@ const K = {
   users: "casino.users",
   session: "casino.session",
   deposits: "casino.deposits",
+  withdrawals: "casino.withdrawals",
   history: "casino.history",
 };
 
@@ -68,6 +90,10 @@ export const store = {
   // deposits
   getDeposits: () => read<DepositRequest[]>(K.deposits, []),
   setDeposits: (d: DepositRequest[]) => write(K.deposits, d),
+
+  // withdrawals
+  getWithdrawals: () => read<WithdrawRequest[]>(K.withdrawals, []),
+  setWithdrawals: (w: WithdrawRequest[]) => write(K.withdrawals, w),
 
   // history
   getHistory: () => read<HistoryEntry[]>(K.history, []),
