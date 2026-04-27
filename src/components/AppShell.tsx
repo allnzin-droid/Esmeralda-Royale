@@ -1,7 +1,7 @@
 import { Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
-import { Coins, LogOut, Shield, Home } from "lucide-react";
+import { Coins, LogOut, Shield, Home, MessageSquare } from "lucide-react";
 
 export function AppShell() {
   const { user, isAdmin, signOut } = useAuth();
@@ -25,6 +25,9 @@ export function AppShell() {
                 </div>
                 <Button variant="ghost" size="sm" onClick={() => nav({ to: "/dashboard" })}>
                   <Home className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => nav({ to: "/messages" })}>
+                  <MessageSquare className="h-4 w-4" />
                 </Button>
                 {isAdmin && (
                   <Button variant="ghost" size="sm" onClick={() => nav({ to: "/admin" })}>
