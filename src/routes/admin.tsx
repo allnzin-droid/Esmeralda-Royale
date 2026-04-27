@@ -42,9 +42,12 @@ function AdminPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
-      <div>
-        <h1 className="font-display text-3xl text-primary glow-gold">Painel Admin</h1>
-        <p className="text-sm text-muted-foreground">Gerencie depósitos, saques e usuários</p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="font-display text-3xl text-primary glow-gold">Painel Admin</h1>
+          <p className="text-sm text-muted-foreground">Gerencie depósitos, saques e usuários</p>
+        </div>
+        <AdminPinStatus />
       </div>
 
       <Tabs defaultValue="deposits">
