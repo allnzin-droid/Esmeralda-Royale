@@ -1,61 +1,123 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { store, type User, uid, ADMIN_EMAIL } from "./store";
+import { supabase } from "@/integrations/supabase/client";
+import type { Session, User as SupaUser } from "@supabase/supabase-js";
+
+export type AppUser = {
+  id: string;
+  email: string;
+  name: string;
+  balance: number;
+};
 
 type AuthCtx = {
-  user: User | null;
+  user: AppUser | null;
   isAdmin: boolean;
-  signUp: (email: string, name: string, password: string) => { ok: boolean; error?: string };
-  signIn: (email: string, password: string) => { ok: boolean; error?: string };
-  signOut: () => void;
-  refresh: () => void;
+  loading: boolean;
+  signUp: (email: string, name: string, password: string) => Promise<{ ok: boolean; error?: string }>;
+  signIn: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
+  signOut: () => Promise<void>;
+  refresh: () => Promise<void>;
 };
 
 const Ctx = createContext<AuthCtx | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<{ name: string; email: string } | null>(null);
+  const [balance, setBalance] = useState<number>(0);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const refresh = () => {
-    const id = store.getSession();
-    const u = id ? store.getUsers().find((x) => x.id === id) ?? null : null;
-    setUser(u);
+  const loadFor = async (su: SupaUser) => {
+    const [{ data: prof }, { data: bal }, { data: roles }] = await Promise.all([
+      supabase.from("profiles").select("name,email").eq("id", su.id).maybeSingle(),
+      supabase.from("balances").select("amount").eq("user_id", su.id).maybeSingle(),
+      supabase.from("user_roles").select("role").eq("user_id", su.id),
+    ]);
+    setProfile(prof ?? { name: su.email?.split("@")[0] ?? "", email: su.email ?? "" });
+    setBalance(Number(bal?.amount ?? 0));
+    setIsAdmin(!!roles?.some((r) => r.role === "admin"));
+  };
+
+  const refresh = async () => {
+    if (!session?.user) return;
+    await loadFor(session.user);
   };
 
   useEffect(() => {
-    refresh();
-    const h = () => refresh();
-    window.addEventListener("casino:update", h);
-    window.addEventListener("storage", h);
-    return () => {
-      window.removeEventListener("casino:update", h);
-      window.removeEventListener("storage", h);
-    };
+    const { data: sub } = supabase.auth.onAuthStateChange((_evt, s) => {
+      setSession(s);
+      if (s?.user) {
+        // defer to avoid deadlock
+        setTimeout(() => loadFor(s.user), 0);
+      } else {
+        setProfile(null);
+        setBalance(0);
+        setIsAdmin(false);
+      }
+    });
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      if (data.session?.user) loadFor(data.session.user);
+      setLoading(false);
+    });
+    return () => sub.subscription.unsubscribe();
   }, []);
 
-  const signUp: AuthCtx["signUp"] = (email, name, password) => {
+  // Realtime balance updates
+  useEffect(() => {
+    if (!session?.user) return;
+    const ch = supabase
+      .channel("balance-" + session.user.id)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "balances", filter: `user_id=eq.${session.user.id}` },
+        (payload) => {
+          const row = payload.new as { amount?: number } | null;
+          if (row && typeof row.amount !== "undefined") setBalance(Number(row.amount));
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [session?.user?.id]);
+
+  const signUp: AuthCtx["signUp"] = async (email, name, password) => {
     email = email.trim().toLowerCase();
-    if (!email || !name || password.length < 4) return { ok: false, error: "Preencha todos os campos (senha 4+ caracteres)" };
-    const users = store.getUsers();
-    if (users.some((u) => u.email === email)) return { ok: false, error: "E-mail já cadastrado" };
-    const newU: User = { id: uid(), email, name, password, balance: 0, createdAt: Date.now() };
-    users.push(newU);
-    store.setUsers(users);
-    store.setSession(newU.id);
+    if (!email || !name || password.length < 6) return { ok: false, error: "Preencha tudo (senha 6+ caracteres)" };
+    const redirectUrl = `${window.location.origin}/dashboard`;
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: redirectUrl, data: { name } },
+    });
+    if (error) return { ok: false, error: error.message };
     return { ok: true };
   };
 
-  const signIn: AuthCtx["signIn"] = (email, password) => {
+  const signIn: AuthCtx["signIn"] = async (email, password) => {
     email = email.trim().toLowerCase();
-    const u = store.getUsers().find((x) => x.email === email && x.password === password);
-    if (!u) return { ok: false, error: "Credenciais inválidas" };
-    store.setSession(u.id);
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return { ok: false, error: "Credenciais inválidas" };
     return { ok: true };
   };
 
-  const signOut = () => store.setSession(null);
+  const signOut = async () => {
+    await supabase.auth.signOut();
+  };
+
+  const user: AppUser | null = session?.user
+    ? {
+        id: session.user.id,
+        email: profile?.email ?? session.user.email ?? "",
+        name: profile?.name ?? session.user.email?.split("@")[0] ?? "",
+        balance,
+      }
+    : null;
 
   return (
-    <Ctx.Provider value={{ user, isAdmin: !!user && user.email === ADMIN_EMAIL, signUp, signIn, signOut, refresh }}>
+    <Ctx.Provider value={{ user, isAdmin, loading, signUp, signIn, signOut, refresh }}>
       {children}
     </Ctx.Provider>
   );

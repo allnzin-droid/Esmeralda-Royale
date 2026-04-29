@@ -29,14 +29,14 @@ function StatusPill({ status }: { status: string }) {
 }
 
 function MessagesPage() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const nav = useNavigate();
   const deposits = useDeposits();
   const withdrawals = useWithdrawals();
 
   useEffect(() => {
-    if (!user) nav({ to: "/auth" });
-  }, [user, nav]);
+    if (!loading && !user) nav({ to: "/auth" });
+  }, [user, loading, nav]);
   if (!user) return null;
 
   const myDeps = deposits.filter((d) => d.userId === user.id);

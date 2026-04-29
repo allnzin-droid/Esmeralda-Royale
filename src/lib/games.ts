@@ -1,15 +1,30 @@
 import { useAuth } from "@/lib/auth";
-import { adjustBalance } from "@/lib/store";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 
+/**
+ * useBet — wraps the server-side `game_play` RPC.
+ *
+ * Backwards-compatible API:
+ *  - placeBet(amount): boolean   → reserves the bet client-side (validates UI)
+ *  - payout(amount, note?)       → resolves the round on the server
+ *
+ * Internally we batch into a single atomic server call so balance is always
+ * validated and updated server-side. If `payout` is never called, we resolve
+ * with win=0 on cleanup.
+ */
 export function useBet(game: string) {
   const { user } = useAuth();
+  const pending = useRef<{ amount: number; resolved: boolean } | null>(null);
 
   const placeBet = useCallback(
     (amount: number): boolean => {
-      if (!user) return false;
-      if (amount <= 0) {
+      if (!user) {
+        toast.error("Faça login");
+        return false;
+      }
+      if (!Number.isFinite(amount) || amount <= 0) {
         toast.error("Valor de aposta inválido");
         return false;
       }
@@ -17,25 +32,38 @@ export function useBet(game: string) {
         toast.error("Saldo insuficiente");
         return false;
       }
-      adjustBalance(user.id, -amount, { type: "bet", game });
+      // If a previous round wasn't resolved, resolve as loss now.
+      if (pending.current && !pending.current.resolved) {
+        const prev = pending.current;
+        prev.resolved = true;
+        supabase.rpc("game_play", { _game: game, _bet: prev.amount, _win: 0 });
+      }
+      pending.current = { amount, resolved: false };
       return true;
     },
     [user, game],
   );
 
   const payout = useCallback(
-    (amount: number, note?: string) => {
-      if (!user || amount <= 0) return;
-      adjustBalance(user.id, amount, { type: "win", game, note });
+    async (winAmount: number, note?: string) => {
+      const round = pending.current;
+      if (!round || round.resolved) return;
+      round.resolved = true;
+      const { error } = await supabase.rpc("game_play", {
+        _game: game,
+        _bet: round.amount,
+        _win: Math.max(0, +Number(winAmount).toFixed(2)),
+        _note: note ?? undefined,
+      });
+      if (error) toast.error("Erro ao registrar jogada: " + error.message);
     },
-    [user, game],
+    [game],
   );
 
   return { user, placeBet, payout };
 }
 
 export function randomInt(min: number, max: number) {
-  // Cryptographically random when available
   if (typeof crypto !== "undefined" && crypto.getRandomValues) {
     const arr = new Uint32Array(1);
     crypto.getRandomValues(arr);
