@@ -4,36 +4,36 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
-import { store, uid, type WithdrawRequest } from "@/lib/store";
+import { supabase } from "@/integrations/supabase/client";
 import { Banknote } from "lucide-react";
 import { toast } from "sonner";
+
+const MAX = 100000;
 
 export function WithdrawDialog() {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState("100");
   const [pix, setPix] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
     const v = parseFloat(amount);
-    if (!v || v <= 0) return toast.error("Valor inválido");
+    if (!Number.isFinite(v) || v <= 0) return toast.error("Valor inválido");
+    if (v > MAX) return toast.error(`Máximo por pedido: ${MAX}`);
     if (v > user.balance) return toast.error("Saldo insuficiente");
     if (!pix.trim()) return toast.error("Informe sua chave PIX");
-    const list = store.getWithdrawals();
-    const req: WithdrawRequest = {
-      id: uid(),
-      userId: user.id,
-      userEmail: user.email,
+    if (pix.trim().length > 120) return toast.error("Chave PIX muito longa");
+    setSubmitting(true);
+    const { error } = await supabase.from("withdraw_requests").insert({
+      user_id: user.id,
       amount: +v.toFixed(2),
-      pixKey: pix.trim(),
-      status: "pending",
-      createdAt: Date.now(),
-      messages: [],
-    };
-    list.unshift(req);
-    store.setWithdrawals(list);
+      pix_key: pix.trim(),
+    });
+    setSubmitting(false);
+    if (error) return toast.error(error.message);
     toast.success("Solicitação de saque enviada!");
     setOpen(false);
     setAmount("100");
@@ -54,7 +54,7 @@ export function WithdrawDialog() {
         <form onSubmit={submit} className="space-y-4">
           <div>
             <Label>Quantidade de moedas</Label>
-            <Input type="number" min={1} step="1" value={amount} onChange={(e) => setAmount(e.target.value)} required />
+            <Input type="number" min={1} max={MAX} step="1" value={amount} onChange={(e) => setAmount(e.target.value)} required />
             <p className="text-xs text-muted-foreground mt-1">Saldo atual: {user?.balance.toFixed(2)}</p>
           </div>
           <div>
@@ -65,7 +65,9 @@ export function WithdrawDialog() {
             O admin avaliará sua solicitação e enviará o comprovante na aba de Mensagens.
           </p>
           <DialogFooter>
-            <Button type="submit" className="bg-gradient-emerald shadow-emerald">Enviar solicitação</Button>
+            <Button type="submit" disabled={submitting} className="bg-gradient-emerald shadow-emerald">
+              {submitting ? "Enviando..." : "Enviar solicitação"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

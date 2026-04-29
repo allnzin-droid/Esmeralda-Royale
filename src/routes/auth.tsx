@@ -23,15 +23,15 @@ function AuthPage() {
     if (user) nav({ to: "/dashboard" });
   }, [user, nav]);
 
-  const handleIn = (e: React.FormEvent) => {
+  const handleIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    const r = signIn(email, password);
+    const r = await signIn(email, password);
     if (!r.ok) toast.error(r.error);
     else toast.success("Bem-vindo!");
   };
-  const handleUp = (e: React.FormEvent) => {
+  const handleUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    const r = signUp(email, name, password);
+    const r = await signUp(email, name, password);
     if (!r.ok) toast.error(r.error);
     else toast.success("Conta criada!");
   };

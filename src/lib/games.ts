@@ -53,7 +53,7 @@ export function useBet(game: string) {
         _game: game,
         _bet: round.amount,
         _win: Math.max(0, +Number(winAmount).toFixed(2)),
-        _note: note ?? null,
+        _note: note ?? undefined,
       });
       if (error) toast.error("Erro ao registrar jogada: " + error.message);
     },
