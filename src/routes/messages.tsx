@@ -34,9 +34,10 @@ function MessagesPage() {
   const deposits = useDeposits();
   const withdrawals = useWithdrawals();
 
+  const { loading } = useAuth();
   useEffect(() => {
-    if (!user) nav({ to: "/auth" });
-  }, [user, nav]);
+    if (!loading && !user) nav({ to: "/auth" });
+  }, [user, loading, nav]);
   if (!user) return null;
 
   const myDeps = deposits.filter((d) => d.userId === user.id);

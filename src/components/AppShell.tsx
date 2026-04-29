@@ -34,7 +34,7 @@ export function AppShell() {
                     <Shield className="h-4 w-4 text-gold" />
                   </Button>
                 )}
-                <Button variant="ghost" size="sm" onClick={() => { signOut(); nav({ to: "/" }); }}>
+                <Button variant="ghost" size="sm" onClick={async () => { await signOut(); nav({ to: "/" }); }}>
                   <LogOut className="h-4 w-4" />
                 </Button>
               </>
