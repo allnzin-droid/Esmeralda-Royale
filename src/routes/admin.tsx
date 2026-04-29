@@ -3,14 +3,13 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { useDeposits, useUsers, useWithdrawals } from "@/lib/hooks";
 import {
-  store,
-  adjustBalance,
   addDepositMessage,
   addWithdrawMessage,
   adminPin,
   type DepositRequest,
   type WithdrawRequest,
 } from "@/lib/store";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -25,16 +24,17 @@ export const Route = createFileRoute("/admin")({
 });
 
 function AdminPage() {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, loading } = useAuth();
   const nav = useNavigate();
   const users = useUsers();
   const deposits = useDeposits();
   const withdrawals = useWithdrawals();
 
   useEffect(() => {
+    if (loading) return;
     if (!user) nav({ to: "/auth" });
     else if (!isAdmin) nav({ to: "/dashboard" });
-  }, [user, isAdmin, nav]);
+  }, [user, isAdmin, loading, nav]);
   if (!user || !isAdmin) return null;
 
   const pendingDep = deposits.filter((d) => d.status === "pending" || d.status === "awaiting_payment");
@@ -106,37 +106,24 @@ function DepositCard({ d }: { d: DepositRequest }) {
   const [pixKey, setPixKey] = useState(d.pixKey || "");
   const { request, node } = useAdminConfirm();
 
-  const sendPix = () => {
+  const sendPix = async () => {
     if (!pixKey.trim()) return toast.error("Informe a chave PIX");
-    const list = store.getDeposits();
-    const i = list.findIndex((x) => x.id === d.id);
-    if (i === -1) return;
-    list[i].pixKey = pixKey.trim();
-    list[i].status = "awaiting_payment";
-    store.setDeposits(list);
-    addDepositMessage(d.id, { from: "admin", text: `Chave PIX para pagamento: ${pixKey.trim()}` });
+    const { error } = await supabase.rpc("admin_set_deposit_pix", { _id: d.id, _pix: pixKey.trim() });
+    if (error) return toast.error(error.message);
+    await addDepositMessage(d.id, { from: "admin", text: `Chave PIX para pagamento: ${pixKey.trim()}` });
     toast.success("Chave PIX enviada ao usuário");
   };
 
-  const doApprove = () => {
-    const list = store.getDeposits();
-    const i = list.findIndex((x) => x.id === d.id);
-    if (i === -1) return;
-    list[i].status = "approved";
-    list[i].resolvedAt = Date.now();
-    store.setDeposits(list);
-    adjustBalance(d.userId, d.amount, { type: "deposit", note: `Depósito #${d.id.slice(0, 6)}` });
-    addDepositMessage(d.id, { from: "admin", text: `Depósito aprovado. ${d.amount} moedas creditadas.` });
+  const doApprove = async () => {
+    const { error } = await supabase.rpc("admin_resolve_deposit", { _id: d.id, _approve: true });
+    if (error) return toast.error(error.message);
+    await addDepositMessage(d.id, { from: "admin", text: `Depósito aprovado. ${d.amount} moedas creditadas.` });
     toast.success(`+${d.amount} para ${d.userEmail}`);
   };
-  const doReject = () => {
-    const list = store.getDeposits();
-    const i = list.findIndex((x) => x.id === d.id);
-    if (i === -1) return;
-    list[i].status = "rejected";
-    list[i].resolvedAt = Date.now();
-    store.setDeposits(list);
-    addDepositMessage(d.id, { from: "admin", text: "Depósito rejeitado." });
+  const doReject = async () => {
+    const { error } = await supabase.rpc("admin_resolve_deposit", { _id: d.id, _approve: false });
+    if (error) return toast.error(error.message);
+    await addDepositMessage(d.id, { from: "admin", text: "Depósito rejeitado." });
     toast("Pedido rejeitado");
   };
 
@@ -170,7 +157,7 @@ function DepositCard({ d }: { d: DepositRequest }) {
             <div className="flex gap-2 items-end">
               <div className="flex-1">
                 <label className="text-xs text-muted-foreground">Chave PIX para o usuário pagar</label>
-                <Input value={pixKey} onChange={(e) => setPixKey(e.target.value)} placeholder="Sua chave PIX" />
+                <Input value={pixKey} onChange={(e) => setPixKey(e.target.value)} placeholder="Sua chave PIX" maxLength={120} />
               </div>
               <Button size="sm" variant="outline" className="border-primary/40 text-primary" onClick={sendPix}>
                 <KeyRound className="h-4 w-4 mr-1" /> {d.pixKey ? "Reenviar" : "Enviar PIX"}
@@ -203,27 +190,16 @@ function WithdrawCard({ w }: { w: WithdrawRequest }) {
   const [open, setOpen] = useState(w.status === "pending");
   const { request, node } = useAdminConfirm();
 
-  const doApprove = () => {
-    const users = store.getUsers();
-    const u = users.find((x) => x.id === w.userId);
-    if (!u) return toast.error("Usuário não encontrado");
-    if (u.balance < w.amount) return toast.error("Saldo do usuário insuficiente");
-    const list = store.getWithdrawals();
-    const i = list.findIndex((x) => x.id === w.id);
-    list[i].status = "approved";
-    list[i].resolvedAt = Date.now();
-    store.setWithdrawals(list);
-    adjustBalance(w.userId, -w.amount, { type: "adjust", note: `Saque PIX #${w.id.slice(0, 6)}` });
-    addWithdrawMessage(w.id, { from: "admin", text: `Saque de ${w.amount} aprovado e pago via PIX (${w.pixKey}).` });
+  const doApprove = async () => {
+    const { error } = await supabase.rpc("admin_resolve_withdraw", { _id: w.id, _approve: true });
+    if (error) return toast.error(error.message);
+    await addWithdrawMessage(w.id, { from: "admin", text: `Saque de ${w.amount} aprovado e pago via PIX (${w.pixKey}).` });
     toast.success("Saque aprovado");
   };
-  const doReject = () => {
-    const list = store.getWithdrawals();
-    const i = list.findIndex((x) => x.id === w.id);
-    list[i].status = "rejected";
-    list[i].resolvedAt = Date.now();
-    store.setWithdrawals(list);
-    addWithdrawMessage(w.id, { from: "admin", text: "Saque rejeitado." });
+  const doReject = async () => {
+    const { error } = await supabase.rpc("admin_resolve_withdraw", { _id: w.id, _approve: false });
+    if (error) return toast.error(error.message);
+    await addWithdrawMessage(w.id, { from: "admin", text: "Saque rejeitado." });
     toast("Saque rejeitado");
   };
 
@@ -278,10 +254,11 @@ function UserRow({ userId, email, name, balance }: { userId: string; email: stri
   const { request, node } = useAdminConfirm();
   const apply = () => {
     const v = parseFloat(delta);
-    if (!v) return toast.error("Informe um valor");
+    if (!Number.isFinite(v) || v === 0) return toast.error("Informe um valor");
     request(
-      () => {
-        adjustBalance(userId, v, { type: "adjust", note: "Ajuste manual admin" });
+      async () => {
+        const { error } = await supabase.rpc("admin_adjust_balance", { _user_id: userId, _delta: v, _note: "Ajuste manual admin" });
+        if (error) return toast.error(error.message);
         toast.success(`Ajuste de ${v} aplicado`);
         setDelta("");
       },
@@ -312,15 +289,9 @@ function AdminPinStatus() {
   const [, force] = useState(0);
   const [setupOpen, setSetupOpen] = useState(false);
 
-  // Atualiza a cada 30s para refletir expiração do unlock
   useEffect(() => {
     const t = setInterval(() => force((n) => n + 1), 30_000);
-    const h = () => force((n) => n + 1);
-    window.addEventListener("casino:update", h);
-    return () => {
-      clearInterval(t);
-      window.removeEventListener("casino:update", h);
-    };
+    return () => clearInterval(t);
   }, []);
 
   const hasPin = adminPin.isSet();
@@ -352,6 +323,7 @@ function AdminPinStatus() {
             className="h-7 text-xs"
             onClick={() => {
               adminPin.lock();
+              force((n) => n + 1);
               toast("Modo seguro encerrado");
             }}
           >
