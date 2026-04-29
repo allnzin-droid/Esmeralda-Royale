@@ -29,12 +29,11 @@ function StatusPill({ status }: { status: string }) {
 }
 
 function MessagesPage() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const nav = useNavigate();
   const deposits = useDeposits();
   const withdrawals = useWithdrawals();
 
-  const { loading } = useAuth();
   useEffect(() => {
     if (!loading && !user) nav({ to: "/auth" });
   }, [user, loading, nav]);
