@@ -14,16 +14,245 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      balances: {
+        Row: {
+          amount: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      deposit_requests: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          pix_key: string | null
+          resolved_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          pix_key?: string | null
+          resolved_at?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          pix_key?: string | null
+          resolved_at?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      history: {
+        Row: {
+          amount: number
+          balance_after: number
+          created_at: string
+          game: string | null
+          id: string
+          note: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          balance_after: number
+          created_at?: string
+          game?: string | null
+          id?: string
+          note?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          balance_after?: number
+          created_at?: string
+          game?: string | null
+          id?: string
+          note?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      request_messages: {
+        Row: {
+          attachment_data_url: string | null
+          attachment_name: string | null
+          created_at: string
+          from_role: string
+          id: string
+          request_id: string
+          request_kind: string
+          text: string | null
+          user_id: string
+        }
+        Insert: {
+          attachment_data_url?: string | null
+          attachment_name?: string | null
+          created_at?: string
+          from_role: string
+          id?: string
+          request_id: string
+          request_kind: string
+          text?: string | null
+          user_id: string
+        }
+        Update: {
+          attachment_data_url?: string | null
+          attachment_name?: string | null
+          created_at?: string
+          from_role?: string
+          id?: string
+          request_id?: string
+          request_kind?: string
+          text?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      withdraw_requests: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          pix_key: string
+          resolved_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          pix_key: string
+          resolved_at?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          pix_key?: string
+          resolved_at?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      admin_adjust_balance: {
+        Args: { _delta: number; _note?: string; _user_id: string }
+        Returns: number
+      }
+      admin_list_users: {
+        Args: never
+        Returns: {
+          balance: number
+          created_at: string
+          email: string
+          id: string
+          is_admin: boolean
+          name: string
+        }[]
+      }
+      admin_resolve_deposit: {
+        Args: { _approve: boolean; _id: string }
+        Returns: undefined
+      }
+      admin_resolve_withdraw: {
+        Args: { _approve: boolean; _id: string }
+        Returns: undefined
+      }
+      admin_set_deposit_pix: {
+        Args: { _id: string; _pix: string }
+        Returns: undefined
+      }
+      game_play: {
+        Args: { _bet: number; _game: string; _note?: string; _win: number }
+        Returns: number
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      request_owner: {
+        Args: { _kind: string; _request_id: string }
+        Returns: string
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +379,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
