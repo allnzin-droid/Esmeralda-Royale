@@ -37,6 +37,15 @@ function AuthPage() {
     else toast.success("Conta criada!");
   };
 
+  const handleGoogle = async () => {
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin + "/dashboard",
+    });
+    if (result.error) {
+      toast.error("Falha ao entrar com Google");
+    }
+  };
+
   return (
     <div className="max-w-md mx-auto px-4 py-16">
       <div className="rounded-2xl border border-gold/30 bg-card/80 backdrop-blur p-8 shadow-emerald">
