@@ -1,22 +1,11 @@
-// Local demo store (no backend). All data lives in localStorage.
-// WARNING: Demo only — admin status here is client-side and not secure.
-
-export const ADMIN_EMAIL = "adminhelpfaxina@gmail.com";
-
-export type User = {
-  id: string;
-  email: string;
-  name: string;
-  password: string; // demo only
-  balance: number;
-  createdAt: number;
-};
+// Backend-backed types and helpers. Data lives in Supabase (Lovable Cloud).
+import { supabase } from "@/integrations/supabase/client";
 
 export type RequestMessage = {
   id: string;
   from: "user" | "admin";
   text?: string;
-  attachment?: { name: string; dataUrl: string }; // base64 (comprovante)
+  attachment?: { name: string; dataUrl: string };
   createdAt: number;
 };
 
@@ -28,7 +17,7 @@ export type DepositRequest = {
   status: "pending" | "awaiting_payment" | "approved" | "rejected";
   createdAt: number;
   resolvedAt?: number;
-  pixKey?: string; // chave PIX enviada pelo admin
+  pixKey?: string;
   messages?: RequestMessage[];
 };
 
@@ -49,111 +38,65 @@ export type HistoryEntry = {
   userId: string;
   type: "deposit" | "bet" | "win" | "adjust";
   game?: string;
-  amount: number; // signed
+  amount: number;
   balanceAfter: number;
   createdAt: number;
   note?: string;
 };
 
-const K = {
-  users: "casino.users",
-  session: "casino.session",
-  deposits: "casino.deposits",
-  withdrawals: "casino.withdrawals",
-  history: "casino.history",
-  adminPin: "casino.admin.pin",
-  adminPinUnlock: "casino.admin.pin.unlock", // timestamp ms até quando o PIN está liberado
-};
-
-const PIN_TTL_MS = 5 * 60 * 1000; // 5 minutos de "sessão segura" após confirmar PIN
-
-function read<T>(k: string, fallback: T): T {
-  if (typeof window === "undefined") return fallback;
-  try {
-    const raw = localStorage.getItem(k);
-    return raw ? (JSON.parse(raw) as T) : fallback;
-  } catch {
-    return fallback;
-  }
-}
-function write<T>(k: string, v: T) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(k, JSON.stringify(v));
-  window.dispatchEvent(new CustomEvent("casino:update"));
+// ===== Mensagens =====
+export async function addDepositMessage(
+  requestId: string,
+  msg: { from: "user" | "admin"; text?: string; attachment?: { name: string; dataUrl: string } },
+) {
+  const { data: u } = await supabase.auth.getUser();
+  if (!u.user) return;
+  await supabase.from("request_messages").insert({
+    request_kind: "deposit",
+    request_id: requestId,
+    user_id: u.user.id,
+    from_role: msg.from,
+    text: msg.text ?? null,
+    attachment_name: msg.attachment?.name ?? null,
+    attachment_data_url: msg.attachment?.dataUrl ?? null,
+  });
 }
 
-export const store = {
-  // users
-  getUsers: () => read<User[]>(K.users, []),
-  setUsers: (u: User[]) => write(K.users, u),
+export async function addWithdrawMessage(
+  requestId: string,
+  msg: { from: "user" | "admin"; text?: string; attachment?: { name: string; dataUrl: string } },
+) {
+  const { data: u } = await supabase.auth.getUser();
+  if (!u.user) return;
+  await supabase.from("request_messages").insert({
+    request_kind: "withdraw",
+    request_id: requestId,
+    user_id: u.user.id,
+    from_role: msg.from,
+    text: msg.text ?? null,
+    attachment_name: msg.attachment?.name ?? null,
+    attachment_data_url: msg.attachment?.dataUrl ?? null,
+  });
+}
 
-  // session
-  getSession: () => read<string | null>(K.session, null),
-  setSession: (id: string | null) => write(K.session, id),
+// ===== Admin PIN local (UI extra) — não é auth, é só uma confirmação 2-etapas no painel =====
+const PIN_TTL_MS = 5 * 60 * 1000;
+const K_PIN = "casino.admin.pin";
+const K_UNLOCK = "casino.admin.pin.unlock";
 
-  // deposits
-  getDeposits: () => read<DepositRequest[]>(K.deposits, []),
-  setDeposits: (d: DepositRequest[]) => write(K.deposits, d),
+const safeGet = (k: string) => (typeof window === "undefined" ? null : localStorage.getItem(k));
+const safeSet = (k: string, v: string) => typeof window !== "undefined" && localStorage.setItem(k, v);
 
-  // withdrawals
-  getWithdrawals: () => read<WithdrawRequest[]>(K.withdrawals, []),
-  setWithdrawals: (w: WithdrawRequest[]) => write(K.withdrawals, w),
-
-  // history
-  getHistory: () => read<HistoryEntry[]>(K.history, []),
-  setHistory: (h: HistoryEntry[]) => write(K.history, h),
-};
-
-export const isAdmin = (u?: User | null) => !!u && u.email.toLowerCase() === ADMIN_EMAIL;
-
-// ===== Admin PIN (2-step confirmation) =====
 export const adminPin = {
-  isSet: () => !!read<string | null>(K.adminPin, null),
-  set: (pin: string) => write(K.adminPin, pin),
-  clear: () => write(K.adminPin, null),
-  verify: (pin: string) => read<string | null>(K.adminPin, null) === pin,
-  unlock: () => write(K.adminPinUnlock, Date.now() + PIN_TTL_MS),
+  isSet: () => !!safeGet(K_PIN),
+  set: (pin: string) => safeSet(K_PIN, pin),
+  clear: () => typeof window !== "undefined" && localStorage.removeItem(K_PIN),
+  verify: (pin: string) => safeGet(K_PIN) === pin,
+  unlock: () => safeSet(K_UNLOCK, String(Date.now() + PIN_TTL_MS)),
   isUnlocked: () => {
-    const t = read<number>(K.adminPinUnlock, 0);
-    return typeof t === "number" && t > Date.now();
+    const t = Number(safeGet(K_UNLOCK) ?? 0);
+    return t > Date.now();
   },
-  lock: () => write(K.adminPinUnlock, 0),
-  remainingMs: () => Math.max(0, read<number>(K.adminPinUnlock, 0) - Date.now()),
+  lock: () => safeSet(K_UNLOCK, "0"),
+  remainingMs: () => Math.max(0, Number(safeGet(K_UNLOCK) ?? 0) - Date.now()),
 };
-
-export function uid() {
-  return Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
-}
-
-export function addHistory(entry: Omit<HistoryEntry, "id" | "createdAt">) {
-  const list = store.getHistory();
-  list.unshift({ ...entry, id: uid(), createdAt: Date.now() });
-  store.setHistory(list.slice(0, 500));
-}
-
-export function adjustBalance(userId: string, delta: number, opts: { type: HistoryEntry["type"]; game?: string; note?: string }) {
-  const users = store.getUsers();
-  const idx = users.findIndex((u) => u.id === userId);
-  if (idx === -1) return null;
-  const newBal = Math.max(0, +(users[idx].balance + delta).toFixed(2));
-  users[idx] = { ...users[idx], balance: newBal };
-  store.setUsers(users);
-  addHistory({ userId, type: opts.type, game: opts.game, amount: delta, balanceAfter: newBal, note: opts.note });
-  return users[idx];
-}
-
-export function addDepositMessage(id: string, msg: Omit<RequestMessage, "id" | "createdAt">) {
-  const list = store.getDeposits();
-  const i = list.findIndex((d) => d.id === id);
-  if (i === -1) return;
-  list[i].messages = [...(list[i].messages || []), { ...msg, id: uid(), createdAt: Date.now() }];
-  store.setDeposits(list);
-}
-
-export function addWithdrawMessage(id: string, msg: Omit<RequestMessage, "id" | "createdAt">) {
-  const list = store.getWithdrawals();
-  const i = list.findIndex((w) => w.id === id);
-  if (i === -1) return;
-  list[i].messages = [...(list[i].messages || []), { ...msg, id: uid(), createdAt: Date.now() }];
-  store.setWithdrawals(list);
-}
