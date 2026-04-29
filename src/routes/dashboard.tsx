@@ -19,9 +19,10 @@ function Dashboard() {
   const deposits = useDeposits();
   const withdrawals = useWithdrawals();
 
+  const { user, loading } = useAuth();
   useEffect(() => {
-    if (!user) nav({ to: "/auth" });
-  }, [user, nav]);
+    if (!loading && !user) nav({ to: "/auth" });
+  }, [user, loading, nav]);
   if (!user) return null;
 
   const myPendingDep = deposits.filter((d) => d.userId === user.id && (d.status === "pending" || d.status === "awaiting_payment"));
