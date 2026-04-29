@@ -50,7 +50,7 @@ export function AppShell() {
         <Outlet />
       </main>
       <footer className="border-t border-border/60 py-4 text-center text-xs text-muted-foreground">
-        🎲 Plataforma com <span className="text-gold">moedas virtuais</span> apenas. Sem dinheiro real. Demo local.
+        🎲 Esmeralda Royale — Cassino Virtual
       </footer>
     </div>
   );
