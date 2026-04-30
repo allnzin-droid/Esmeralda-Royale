@@ -208,6 +208,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _charge_bet: {
+        Args: { _bet: number; _game: string; _uid: string }
+        Returns: number
+      }
+      _credit_win: {
+        Args: { _game: string; _note: string; _uid: string; _win: number }
+        Returns: number
+      }
+      _play_slot_internal: {
+        Args: { _bet: number; _game: string; _uid: string }
+        Returns: Json
+      }
+      _weighted_symbol: { Args: never; Returns: number }
       admin_adjust_balance: {
         Args: { _delta: number; _note?: string; _user_id: string }
         Returns: number
@@ -246,11 +259,22 @@ export type Database = {
         }
         Returns: boolean
       }
+      play_boxes: { Args: { _bet: number; _pick: number }; Returns: Json }
+      play_coin: { Args: { _bet: number; _pick: string }; Returns: Json }
+      play_crash: { Args: { _bet: number; _cashout: number }; Returns: Json }
+      play_lucky: { Args: { _bet: number }; Returns: Json }
+      play_roulette: {
+        Args: { _bet: number; _kind: string; _value: string }
+        Returns: Json
+      }
+      play_slots: { Args: { _bet: number }; Returns: Json }
+      play_tiger: { Args: { _bet: number }; Returns: Json }
       realtime_topic_uid: { Args: { _topic: string }; Returns: string }
       request_owner: {
         Args: { _kind: string; _request_id: string }
         Returns: string
       }
+      srand: { Args: never; Returns: number }
     }
     Enums: {
       app_role: "admin" | "user"
