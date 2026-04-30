@@ -1,24 +1,30 @@
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useCallback, useRef } from "react";
+import { useCallback } from "react";
 
 /**
- * useBet — wraps the server-side `game_play` RPC.
+ * Server-authoritative game play.
  *
- * Backwards-compatible API:
- *  - placeBet(amount): boolean   → reserves the bet client-side (validates UI)
- *  - payout(amount, note?)       → resolves the round on the server
- *
- * Internally we batch into a single atomic server call so balance is always
- * validated and updated server-side. If `payout` is never called, we resolve
- * with win=0 on cleanup.
+ * The result of every round is decided by a SECURITY DEFINER function in
+ * Postgres. The client only sends the bet (and any user choice) and receives
+ * the canonical result + new balance. This prevents tampering — the browser
+ * cannot decide its own win amount anymore.
  */
-export function useBet(game: string) {
-  const { user } = useAuth();
-  const pending = useRef<{ amount: number; resolved: boolean } | null>(null);
 
-  const placeBet = useCallback(
+type RpcName =
+  | "play_crash"
+  | "play_coin"
+  | "play_roulette"
+  | "play_slots"
+  | "play_tiger"
+  | "play_lucky"
+  | "play_boxes";
+
+export function usePlay() {
+  const { user, refresh } = useAuth();
+
+  const validateBet = useCallback(
     (amount: number): boolean => {
       if (!user) {
         toast.error("Faça login");
@@ -32,35 +38,31 @@ export function useBet(game: string) {
         toast.error("Saldo insuficiente");
         return false;
       }
-      // If a previous round wasn't resolved, resolve as loss now.
-      if (pending.current && !pending.current.resolved) {
-        const prev = pending.current;
-        prev.resolved = true;
-        supabase.rpc("game_play", { _game: game, _bet: prev.amount, _win: 0 });
-      }
-      pending.current = { amount, resolved: false };
       return true;
     },
-    [user, game],
+    [user],
   );
 
-  const payout = useCallback(
-    async (winAmount: number, note?: string) => {
-      const round = pending.current;
-      if (!round || round.resolved) return;
-      round.resolved = true;
-      const { error } = await supabase.rpc("game_play", {
-        _game: game,
-        _bet: round.amount,
-        _win: Math.max(0, +Number(winAmount).toFixed(2)),
-        _note: note ?? undefined,
-      });
-      if (error) toast.error("Erro ao registrar jogada: " + error.message);
+  const play = useCallback(
+    async <T = unknown>(rpc: RpcName, args: Record<string, unknown>): Promise<T | null> => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await supabase.rpc(rpc as any, args as any);
+      if (error) {
+        const msg = error.message || "";
+        if (msg.includes("insufficient_balance")) toast.error("Saldo insuficiente");
+        else if (msg.includes("invalid_bet")) toast.error("Aposta inválida");
+        else if (msg.includes("not_authenticated")) toast.error("Faça login");
+        else toast.error("Erro: " + msg);
+        return null;
+      }
+      // Realtime atualiza o saldo, mas garantimos refresh em caso de falha do canal
+      void refresh();
+      return data as T;
     },
-    [game],
+    [refresh],
   );
 
-  return { user, placeBet, payout };
+  return { user, validateBet, play };
 }
 
 export function randomInt(min: number, max: number) {

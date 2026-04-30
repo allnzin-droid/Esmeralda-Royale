@@ -2,83 +2,71 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { GameLayout } from "@/components/GameLayout";
 import { Button } from "@/components/ui/button";
-import { useBet, randomInt } from "@/lib/games";
+import { usePlay } from "@/lib/games";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/games/boxes")({ component: Boxes });
 
-const PRIZES = [0, 0, 1, 2, 3, 5]; // multipliers, shuffled each round
-
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = randomInt(0, i);
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
+type BoxesResult = { winner: boolean; mult: number; win: number; balance: number; pick: number };
 
 function Boxes() {
   const [bet, setBet] = useState(10);
-  const [prizes, setPrizes] = useState<number[]>(shuffle(PRIZES));
   const [opened, setOpened] = useState<number | null>(null);
-  const [revealed, setRevealed] = useState<boolean[]>(Array(6).fill(false));
+  const [reveal, setReveal] = useState<{ mult: number; win: number } | null>(null);
   const [locked, setLocked] = useState(false);
-  const { placeBet, payout } = useBet("Caixas");
+  const { validateBet, play } = usePlay();
 
-  const start = () => {
-    if (!placeBet(bet)) return;
-    setPrizes(shuffle(PRIZES));
-    setRevealed(Array(6).fill(false));
+  const open = async (i: number) => {
+    if (locked) return;
+    if (!validateBet(bet)) return;
+    setLocked(true);
+    setOpened(i);
+    setReveal(null);
+    const res = await play<BoxesResult>("play_boxes", { _bet: bet, _pick: i });
+    if (!res) {
+      setLocked(false);
+      setOpened(null);
+      return;
+    }
+    setTimeout(() => {
+      setReveal({ mult: Number(res.mult), win: Number(res.win) });
+      if (res.win > 0) toast.success(`🎁 Caixa x${res.mult} → +${res.win.toFixed(2)}`);
+      else toast.error("Caixa vazia 😢");
+    }, 600);
+  };
+
+  const reset = () => {
     setOpened(null);
+    setReveal(null);
     setLocked(false);
   };
 
-  const open = (i: number) => {
-    if (locked || opened !== null) return;
-    if (prizes[i] === undefined) {
-      toast.error("Aposte primeiro");
-      return;
-    }
-    setOpened(i);
-    setLocked(true);
-    // reveal chosen, then others gradually
-    const newRev = [...revealed];
-    newRev[i] = true;
-    setRevealed(newRev);
-    setTimeout(() => {
-      const final = newRev.map(() => true);
-      setRevealed(final);
-      const m = prizes[i];
-      if (m > 0) {
-        payout(bet * m, `Caixa x${m}`);
-        toast.success(`🎁 Caixa x${m} → +${(bet * m).toFixed(2)}`);
-      } else {
-        toast.error("Caixa vazia 😢");
-      }
-    }, 700);
-  };
-
   return (
-    <GameLayout title="Caixas Premiadas" description="6 caixas, prêmios escondidos: 0x, 0x, 1x, 2x, 3x, 5x." bet={bet} setBet={setBet} disabled={false}>
+    <GameLayout title="Caixas Premiadas" description="9 caixas — escolha uma. Prêmios escondidos até 15x." bet={bet} setBet={setBet} disabled={locked}>
       <div className="grid grid-cols-3 gap-3 mb-6">
-        {prizes.map((m, i) => (
-          <button
-            key={i}
-            onClick={() => open(i)}
-            disabled={locked && opened !== i ? false : false}
-            className={`aspect-square rounded-2xl border-2 transition-all grid place-items-center font-display text-3xl ${
-              revealed[i]
-                ? m > 0 ? "bg-gradient-gold border-gold ring-gold" : "bg-secondary border-border opacity-60"
-                : "bg-card border-gold/30 hover:border-gold hover:scale-105 cursor-pointer"
-            } ${opened === i ? "animate-float-up" : ""}`}
-          >
-            {revealed[i] ? (m > 0 ? `${m}x` : "❌") : "🎁"}
-          </button>
-        ))}
+        {Array.from({ length: 9 }, (_, i) => i).map((i) => {
+          const isOpened = opened === i;
+          const showReveal = isOpened && reveal !== null;
+          return (
+            <button
+              key={i}
+              onClick={() => open(i)}
+              disabled={locked}
+              className={`aspect-square rounded-2xl border-2 transition-all grid place-items-center font-display text-3xl ${
+                showReveal
+                  ? reveal!.win > 0
+                    ? "bg-gradient-gold border-gold ring-gold animate-float-up"
+                    : "bg-secondary border-border opacity-60"
+                  : "bg-card border-gold/30 hover:border-gold hover:scale-105 cursor-pointer"
+              }`}
+            >
+              {showReveal ? (reveal!.win > 0 ? `${reveal!.mult}x` : "❌") : "🎁"}
+            </button>
+          );
+        })}
       </div>
-      <Button onClick={start} className="w-full bg-gradient-emerald shadow-emerald">
-        {opened !== null ? "Nova rodada" : "Apostar e escolher"}
+      <Button onClick={reset} disabled={!reveal} className="w-full bg-gradient-emerald shadow-emerald">
+        Nova rodada
       </Button>
     </GameLayout>
   );

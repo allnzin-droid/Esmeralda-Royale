@@ -5,21 +5,21 @@ import { Button } from "@/components/ui/button";
 import { usePlay, randomInt } from "@/lib/games";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/games/slots")({ component: Slots });
+export const Route = createFileRoute("/games/tiger")({ component: Tiger });
 
-const SYMBOLS = ["🍒", "🍋", "🍇", "🔔", "⭐", "💎"];
-type SlotsResult = { reels: [number, number, number]; win: number; mult: number; balance: number };
+const SYMBOLS = ["🐯", "🍊", "💰", "🏮", "🪙", "🐉"];
+type TigerResult = { reels: [number, number, number]; win: number; mult: number; balance: number };
 
-function Slots() {
+function Tiger() {
   const [bet, setBet] = useState(10);
-  const [reels, setReels] = useState<string[]>([SYMBOLS[0], SYMBOLS[1], SYMBOLS[2]]);
+  const [reels, setReels] = useState<string[]>([SYMBOLS[0], SYMBOLS[3], SYMBOLS[1]]);
   const [spinning, setSpinning] = useState(false);
   const { validateBet, play } = usePlay();
 
   const spin = async () => {
     if (!validateBet(bet)) return;
     setSpinning(true);
-    const res = await play<SlotsResult>("play_slots", { _bet: bet });
+    const res = await play<TigerResult>("play_tiger", { _bet: bet });
     if (!res) {
       setSpinning(false);
       return;
@@ -37,25 +37,26 @@ function Slots() {
         const final = res.reels.map((i) => SYMBOLS[i]);
         setReels(final);
         setSpinning(false);
-        if (res.win > 0) toast.success(`🎰 ${final.join(" ")} → x${res.mult} (+${res.win.toFixed(2)})`);
-        else toast.error("Sem combinação 😞");
+        if (res.win > 0) toast.success(`🐯 ${final.join(" ")} → x${res.mult} (+${res.win.toFixed(2)})`);
+        else toast.error("O tigre dormiu 😴");
       }
     }, 90);
   };
 
   return (
-    <GameLayout title="Caça-Níqueis" description="3 iguais paga até 20x. Pares ocasionais pagam 1.2x." bet={bet} setBet={setBet} disabled={spinning}>
-      <div className="rounded-2xl bg-background/60 border-2 border-gold/40 p-6 mb-6">
+    <GameLayout title="Fortune Tiger 🐯" description="O tigrinho da sorte! 3 iguais paga até 20x." bet={bet} setBet={setBet} disabled={spinning}>
+      <div className="rounded-2xl bg-gradient-to-br from-amber-950/60 to-red-950/60 border-2 border-gold/60 p-6 mb-6 shadow-gold">
+        <div className="text-center mb-3 font-display text-2xl text-gold glow-gold">🐯 福 TIGRE DA SORTE 福 🐯</div>
         <div className="grid grid-cols-3 gap-3">
           {reels.map((s, i) => (
-            <div key={i} className={`aspect-square rounded-xl bg-gradient-emerald grid place-items-center text-6xl shadow-emerald ${spinning ? "animate-pulse" : ""}`}>
+            <div key={i} className={`aspect-square rounded-xl bg-gradient-to-br from-yellow-700 to-red-800 grid place-items-center text-6xl shadow-emerald border-2 border-gold/40 ${spinning ? "animate-pulse" : ""}`}>
               {s}
             </div>
           ))}
         </div>
       </div>
       <Button onClick={spin} disabled={spinning} className="w-full bg-gradient-gold shadow-gold h-12 text-lg">
-        {spinning ? "Girando..." : "GIRAR 🎰"}
+        {spinning ? "Girando..." : "GIRAR 🐯"}
       </Button>
       <div className="mt-4 grid grid-cols-6 gap-1 text-center text-xs">
         {SYMBOLS.map((s, i) => {

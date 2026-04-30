@@ -2,53 +2,53 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { GameLayout } from "@/components/GameLayout";
 import { Button } from "@/components/ui/button";
-import { useBet, randomInt } from "@/lib/games";
+import { usePlay } from "@/lib/games";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/games/lucky")({ component: Lucky });
 
+type LuckyResult = { mult: number; win: number; balance: number };
+
 function Lucky() {
   const [bet, setBet] = useState(10);
-  const [pick, setPick] = useState<number | null>(null);
-  const [result, setResult] = useState<number | null>(null);
-  const [rolling, setRolling] = useState(false);
-  const { placeBet, payout } = useBet("Número da Sorte");
+  const [revealed, setRevealed] = useState<number | null>(null);
+  const [scratching, setScratching] = useState(false);
+  const { validateBet, play } = usePlay();
 
-  const roll = () => {
-    if (pick === null) return toast.error("Escolha um número de 1 a 10");
-    if (!placeBet(bet)) return;
-    setRolling(true);
-    setResult(null);
+  const scratch = async () => {
+    if (!validateBet(bet)) return;
+    setScratching(true);
+    setRevealed(null);
+    const res = await play<LuckyResult>("play_lucky", { _bet: bet });
+    if (!res) {
+      setScratching(false);
+      return;
+    }
     setTimeout(() => {
-      const r = randomInt(1, 10);
-      setResult(r);
-      setRolling(false);
-      if (r === pick) {
-        payout(bet * 9, "Número da Sorte x9");
-        toast.success(`🎯 Acertou ${r}! Ganhou ${(bet * 9).toFixed(2)}`);
-      } else {
-        toast.error(`Saiu ${r}. Era ${pick}.`);
-      }
-    }, 1200);
+      setRevealed(Number(res.mult));
+      setScratching(false);
+      if (res.win > 0) toast.success(`🎟️ x${res.mult}! +${res.win.toFixed(2)}`);
+      else toast.error("Não foi dessa vez.");
+    }, 1000);
   };
 
   return (
-    <GameLayout title="Número da Sorte" description="Escolha 1-10. Acerto paga 9x." bet={bet} setBet={setBet} disabled={rolling}>
-      <div className="grid grid-cols-5 gap-2 mb-6">
-        {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
-          <button key={n} onClick={() => setPick(n)} disabled={rolling} className={`aspect-square rounded-xl text-2xl font-display font-bold transition ${pick === n ? "bg-gradient-gold ring-gold" : "bg-secondary hover:bg-secondary/70 border border-border"}`}>
-            {n}
-          </button>
-        ))}
-      </div>
+    <GameLayout title="Raspadinha da Sorte" description="Prêmios de 0.5x até 30x." bet={bet} setBet={setBet} disabled={scratching}>
       <div className="text-center mb-6">
-        <div className={`inline-block h-24 w-24 rounded-2xl bg-card border-2 border-gold/40 grid place-items-center font-display text-4xl text-gold ${rolling ? "animate-pulse" : ""}`}>
-          {rolling ? "?" : result ?? "—"}
+        <div className={`inline-block h-40 w-40 rounded-2xl bg-gradient-gold border-4 border-gold/60 shadow-gold grid place-items-center font-display text-5xl text-background ${scratching ? "animate-pulse" : ""}`}>
+          {scratching ? "🎟️" : revealed === null ? "?" : revealed === 0 ? "❌" : `${revealed}x`}
         </div>
       </div>
-      <Button onClick={roll} disabled={rolling || pick === null} className="w-full bg-gradient-gold shadow-gold">
-        {rolling ? "Sorteando..." : "Sortear"}
+      <Button onClick={scratch} disabled={scratching} className="w-full bg-gradient-emerald shadow-emerald">
+        {scratching ? "Raspando..." : "Raspar"}
       </Button>
+      <div className="mt-4 grid grid-cols-5 gap-1 text-center text-xs">
+        {[0.5, 1.5, 3, 8, 30].map((m) => (
+          <div key={m} className="bg-secondary rounded p-1">
+            <div className="text-gold font-mono">x{m}</div>
+          </div>
+        ))}
+      </div>
     </GameLayout>
   );
 }
