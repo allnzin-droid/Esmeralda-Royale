@@ -14,6 +14,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as GamesTigerRouteImport } from './routes/games.tiger'
 import { Route as GamesSlotsRouteImport } from './routes/games.slots'
 import { Route as GamesRouletteRouteImport } from './routes/games.roulette'
 import { Route as GamesLuckyRouteImport } from './routes/games.lucky'
@@ -44,6 +45,11 @@ const AdminRoute = AdminRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GamesTigerRoute = GamesTigerRouteImport.update({
+  id: '/games/tiger',
+  path: '/games/tiger',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GamesSlotsRoute = GamesSlotsRouteImport.update({
@@ -89,6 +95,7 @@ export interface FileRoutesByFullPath {
   '/games/lucky': typeof GamesLuckyRoute
   '/games/roulette': typeof GamesRouletteRoute
   '/games/slots': typeof GamesSlotsRoute
+  '/games/tiger': typeof GamesTigerRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -102,6 +109,7 @@ export interface FileRoutesByTo {
   '/games/lucky': typeof GamesLuckyRoute
   '/games/roulette': typeof GamesRouletteRoute
   '/games/slots': typeof GamesSlotsRoute
+  '/games/tiger': typeof GamesTigerRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -116,6 +124,7 @@ export interface FileRoutesById {
   '/games/lucky': typeof GamesLuckyRoute
   '/games/roulette': typeof GamesRouletteRoute
   '/games/slots': typeof GamesSlotsRoute
+  '/games/tiger': typeof GamesTigerRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -131,6 +140,7 @@ export interface FileRouteTypes {
     | '/games/lucky'
     | '/games/roulette'
     | '/games/slots'
+    | '/games/tiger'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -144,6 +154,7 @@ export interface FileRouteTypes {
     | '/games/lucky'
     | '/games/roulette'
     | '/games/slots'
+    | '/games/tiger'
   id:
     | '__root__'
     | '/'
@@ -157,6 +168,7 @@ export interface FileRouteTypes {
     | '/games/lucky'
     | '/games/roulette'
     | '/games/slots'
+    | '/games/tiger'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -171,6 +183,7 @@ export interface RootRouteChildren {
   GamesLuckyRoute: typeof GamesLuckyRoute
   GamesRouletteRoute: typeof GamesRouletteRoute
   GamesSlotsRoute: typeof GamesSlotsRoute
+  GamesTigerRoute: typeof GamesTigerRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -208,6 +221,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/games/tiger': {
+      id: '/games/tiger'
+      path: '/games/tiger'
+      fullPath: '/games/tiger'
+      preLoaderRoute: typeof GamesTigerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/games/slots': {
@@ -267,6 +287,7 @@ const rootRouteChildren: RootRouteChildren = {
   GamesLuckyRoute: GamesLuckyRoute,
   GamesRouletteRoute: GamesRouletteRoute,
   GamesSlotsRoute: GamesSlotsRoute,
+  GamesTigerRoute: GamesTigerRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
