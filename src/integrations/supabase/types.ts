@@ -246,6 +246,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      realtime_topic_uid: { Args: { _topic: string }; Returns: string }
       request_owner: {
         Args: { _kind: string; _request_id: string }
         Returns: string
