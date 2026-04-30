@@ -2,49 +2,50 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { GameLayout } from "@/components/GameLayout";
 import { Button } from "@/components/ui/button";
-import { useBet } from "@/lib/games";
+import { usePlay } from "@/lib/games";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/games/coin")({ component: Coin });
 
+type CoinResult = { result: "cara" | "coroa"; win: number; balance: number };
+
 function Coin() {
   const [bet, setBet] = useState(10);
-  const [pick, setPick] = useState<"H" | "T">("H");
+  const [pick, setPick] = useState<"cara" | "coroa">("cara");
   const [flipping, setFlipping] = useState(false);
-  const [result, setResult] = useState<"H" | "T" | null>(null);
-  const { placeBet, payout } = useBet("Cara/Coroa");
+  const [result, setResult] = useState<"cara" | "coroa" | null>(null);
+  const { validateBet, play } = usePlay();
 
-  const flip = () => {
-    if (!placeBet(bet)) return;
+  const flip = async () => {
+    if (!validateBet(bet)) return;
     setFlipping(true);
     setResult(null);
-    setTimeout(() => {
-      // 49% chance for picked side (slight house edge)
-      const r = Math.random() < 0.49 ? pick : pick === "H" ? "T" : "H";
-      setResult(r);
+    const res = await play<CoinResult>("play_coin", { _bet: bet, _pick: pick });
+    if (!res) {
       setFlipping(false);
-      if (r === pick) {
-        payout(bet * 1.95, "Cara/Coroa x1.95");
-        toast.success(`Acertou! +${(bet * 1.95).toFixed(2)}`);
-      } else {
-        toast.error("Errou.");
-      }
+      return;
+    }
+    setTimeout(() => {
+      setResult(res.result);
+      setFlipping(false);
+      if (res.win > 0) toast.success(`Acertou! +${res.win.toFixed(2)}`);
+      else toast.error("Errou.");
     }, 1500);
   };
 
   return (
-    <GameLayout title="Cara ou Coroa" description="Acerto paga 1.95x." bet={bet} setBet={setBet} disabled={flipping}>
+    <GameLayout title="Cara ou Coroa" description="Acerto paga 2x." bet={bet} setBet={setBet} disabled={flipping}>
       <div className="grid place-items-center mb-6">
         <div
-          className={`h-32 w-32 rounded-full bg-gradient-gold grid place-items-center font-display text-5xl shadow-gold border-4 border-gold`}
+          className="h-32 w-32 rounded-full bg-gradient-gold grid place-items-center font-display text-5xl shadow-gold border-4 border-gold"
           style={flipping ? { animation: "coin-flip 1.5s ease-out" } : undefined}
         >
-          {result === "H" ? "👑" : result === "T" ? "🦅" : "?"}
+          {result === "cara" ? "👑" : result === "coroa" ? "🦅" : "?"}
         </div>
       </div>
       <div className="grid grid-cols-2 gap-2 mb-4">
-        <Button variant={pick === "H" ? "default" : "outline"} onClick={() => setPick("H")} className={pick === "H" ? "bg-gradient-gold" : "border-gold/30"}>👑 Cara</Button>
-        <Button variant={pick === "T" ? "default" : "outline"} onClick={() => setPick("T")} className={pick === "T" ? "bg-gradient-gold" : "border-gold/30"}>🦅 Coroa</Button>
+        <Button variant={pick === "cara" ? "default" : "outline"} onClick={() => setPick("cara")} className={pick === "cara" ? "bg-gradient-gold" : "border-gold/30"} disabled={flipping}>👑 Cara</Button>
+        <Button variant={pick === "coroa" ? "default" : "outline"} onClick={() => setPick("coroa")} className={pick === "coroa" ? "bg-gradient-gold" : "border-gold/30"} disabled={flipping}>🦅 Coroa</Button>
       </div>
       <Button onClick={flip} disabled={flipping} className="w-full bg-gradient-emerald shadow-emerald h-12">{flipping ? "Girando..." : "Lançar"}</Button>
     </GameLayout>
