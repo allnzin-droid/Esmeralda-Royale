@@ -19,9 +19,10 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   useEffect(() => {
-    if (user) nav({ to: "/dashboard" });
+    if (user) nav({ to: "/dashboard", replace: true });
   }, [user, nav]);
 
   const handleIn = async (e: React.FormEvent) => {
@@ -38,11 +39,20 @@ function AuthPage() {
   };
 
   const handleGoogle = async () => {
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin + "/dashboard",
-    });
-    if (result.error) {
+    setGoogleLoading(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) {
+        toast.error("Falha ao entrar com Google");
+        setGoogleLoading(false);
+        return;
+      }
+      // Se redirected: navegador vai pro Google. Se tokens: onAuthStateChange dispara e redireciona.
+    } catch {
       toast.error("Falha ao entrar com Google");
+      setGoogleLoading(false);
     }
   };
 
@@ -93,7 +103,7 @@ function AuthPage() {
             <span className="bg-card px-2 text-muted-foreground">ou</span>
           </div>
         </div>
-        <Button type="button" variant="outline" className="w-full" onClick={handleGoogle}>
+        <Button type="button" variant="outline" className="w-full" onClick={handleGoogle} disabled={googleLoading}>
           <svg className="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
             <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.4 29.3 35.5 24 35.5c-6.4 0-11.5-5.1-11.5-11.5S17.6 12.5 24 12.5c2.9 0 5.6 1.1 7.7 2.9l5.7-5.7C33.9 6.5 29.2 4.5 24 4.5 13.2 4.5 4.5 13.2 4.5 24S13.2 43.5 24 43.5 43.5 34.8 43.5 24c0-1.2-.1-2.4-.4-3.5z"/>
             <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 16 19 12.5 24 12.5c2.9 0 5.6 1.1 7.7 2.9l5.7-5.7C33.9 6.5 29.2 4.5 24 4.5c-7.5 0-14 4.3-17.7 10.2z"/>
