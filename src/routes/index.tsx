@@ -20,7 +20,7 @@ function Landing() {
       <section className="max-w-6xl mx-auto px-4 py-20 text-center">
         <div className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-secondary/60 px-4 py-1.5 text-xs text-gold mb-6 animate-float-up">
           <ShieldAlert className="h-3.5 w-3.5" />
-          Apenas moedas virtuais — sem dinheiro real
+          Jogue com responsabilidade
         </div>
         <h1 className="font-display text-5xl md:text-7xl font-bold text-gold glow-gold animate-float-up">
           Esmeralda Royale
@@ -41,9 +41,9 @@ function Landing() {
 
         <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
           {[
-            { icon: Dices, title: "6 jogos de azar", text: "Roleta, número da sorte, crash, caixas, slot e cara/coroa." },
-            { icon: Coins, title: "Saldo virtual", text: "Solicite moedas ao admin e jogue à vontade. Sem custos reais." },
-            { icon: ShieldAlert, title: "Demo segura", text: "Tudo roda no seu navegador. Apenas para entretenimento." },
+            { icon: Dices, title: "Múltiplas opções de jogos", text: "Roleta, número da sorte, crash, caixas, slot, tigrinho e cara/coroa." },
+            { icon: Coins, title: "Simples de jogar e ganhar", text: "Solicite moedas ao admin e jogue à vontade. Sem custos reais." },
+            { icon: ShieldAlert, title: "Demo por plataforma oficial segura", text: "Ambiente protegido para entretenimento responsável." },
           ].map((f) => (
             <div key={f.title} className="rounded-2xl border border-border bg-card/60 p-6 backdrop-blur hover:border-gold/40 transition">
               <div className="h-10 w-10 rounded-lg bg-gradient-emerald grid place-items-center shadow-emerald mb-4">
