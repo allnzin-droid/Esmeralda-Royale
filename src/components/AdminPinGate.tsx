@@ -43,21 +43,28 @@ export function AdminPinGate({ open, onClose, onConfirm, title, description }: P
     setConfirmPin("");
   }, [open]);
 
-  const handleSetup = () => {
+  const handleSetup = async () => {
     if (pin.length !== 4) return toast.error("O PIN deve ter 4 dígitos");
     if (pin !== confirmPin) return toast.error("Os PINs não conferem");
-    adminPin.set(pin);
+    await adminPin.set(pin);
     adminPin.unlock();
     toast.success("PIN configurado e ação confirmada");
     onConfirm();
     onClose();
   };
 
-  const handleVerify = () => {
+  const handleVerify = async () => {
     if (pin.length !== 4) return toast.error("Digite o PIN de 4 dígitos");
-    if (!adminPin.verify(pin)) {
+    if (adminPin.isLockedOut()) {
+      return toast.error("Muitas tentativas. Recarregue a página para tentar novamente.");
+    }
+    const ok = await adminPin.verify(pin);
+    if (!ok) {
       setPin("");
-      return toast.error("PIN incorreto");
+      const left = adminPin.attemptsLeft();
+      return toast.error(
+        left > 0 ? `PIN incorreto (${left} tentativa(s) restante(s))` : "Bloqueado. Recarregue a página.",
+      );
     }
     adminPin.unlock();
     toast.success("Ação confirmada");
