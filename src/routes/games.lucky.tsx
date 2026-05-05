@@ -33,7 +33,7 @@ function Lucky() {
   };
 
   return (
-    <GameLayout title="Raspadinha da Sorte" description="Prêmios de 0.5x até 30x." bet={bet} setBet={setBet} disabled={scratching}>
+    <GameLayout title="Raspadinha" description="Prêmios de 0.5x até 30x." bet={bet} setBet={setBet} disabled={scratching}>
       <div className="text-center mb-6">
         <div className={`inline-block h-40 w-40 rounded-2xl bg-gradient-gold border-4 border-gold/60 shadow-gold grid place-items-center font-display text-5xl text-background ${scratching ? "animate-pulse" : ""}`}>
           {scratching ? "🎟️" : revealed === null ? "?" : revealed === 0 ? "❌" : `${revealed}x`}

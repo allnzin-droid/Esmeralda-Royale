@@ -8,17 +8,22 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/games/slots")({ component: Slots });
 
 const SYMBOLS = ["🍒", "🍋", "🍇", "🔔", "⭐", "💎"];
-type SlotsResult = { reels: [number, number, number]; win: number; mult: number; balance: number };
+type SlotsResult = { grid: number[]; lines: number[]; mult: number; win: number; balance: number };
+
+const LINE_NAMES = ["Linha 1", "Linha 2", "Linha 3", "Diagonal ↘", "Diagonal ↙"];
+const WIN_LINES = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 4, 8], [2, 4, 6]];
 
 function Slots() {
   const [bet, setBet] = useState(10);
-  const [reels, setReels] = useState<string[]>([SYMBOLS[0], SYMBOLS[1], SYMBOLS[2]]);
+  const [grid, setGrid] = useState<string[]>(Array(9).fill(SYMBOLS[0]));
+  const [hitLines, setHitLines] = useState<number[]>([]);
   const [spinning, setSpinning] = useState(false);
   const { validateBet, play } = usePlay();
 
   const spin = async () => {
     if (!validateBet(bet)) return;
     setSpinning(true);
+    setHitLines([]);
     const res = await play<SlotsResult>("play_slots", { _bet: bet });
     if (!res) {
       setSpinning(false);
@@ -26,47 +31,47 @@ function Slots() {
     }
     let ticks = 0;
     const iv = setInterval(() => {
-      setReels([
-        SYMBOLS[randomInt(0, SYMBOLS.length - 1)],
-        SYMBOLS[randomInt(0, SYMBOLS.length - 1)],
-        SYMBOLS[randomInt(0, SYMBOLS.length - 1)],
-      ]);
+      setGrid(Array.from({ length: 9 }, () => SYMBOLS[randomInt(0, SYMBOLS.length - 1)]));
       ticks++;
       if (ticks >= 14) {
         clearInterval(iv);
-        const final = res.reels.map((i) => SYMBOLS[i]);
-        setReels(final);
+        setGrid(res.grid.map((i) => SYMBOLS[i]));
+        setHitLines(res.lines || []);
         setSpinning(false);
-        if (res.win > 0) toast.success(`🎰 ${final.join(" ")} → x${res.mult} (+${res.win.toFixed(2)})`);
-        else toast.error("Sem combinação 😞");
+        if (res.win > 0) {
+          const names = (res.lines || []).map((i) => LINE_NAMES[i]).join(", ");
+          toast.success(`🎰 ${names} → x${res.mult} (+${Number(res.win).toFixed(2)})`);
+        } else {
+          toast.error("Sem combinação 😞");
+        }
       }
     }, 90);
   };
 
   return (
-    <GameLayout title="Caça-Níqueis" description="3 iguais paga até 20x. Pares ocasionais pagam 1.2x." bet={bet} setBet={setBet} disabled={spinning}>
+    <GameLayout title="Caça-Níqueis" description="Grid 3x3. Vence em 3 linhas + 2 diagonais." bet={bet} setBet={setBet} disabled={spinning}>
       <div className="rounded-2xl bg-background/60 border-2 border-gold/40 p-6 mb-6">
-        <div className="grid grid-cols-3 gap-3">
-          {reels.map((s, i) => (
-            <div key={i} className={`aspect-square rounded-xl bg-gradient-emerald grid place-items-center text-6xl shadow-emerald ${spinning ? "animate-pulse" : ""}`}>
-              {s}
-            </div>
-          ))}
+        <div className="grid grid-cols-3 gap-2">
+          {grid.map((s, i) => {
+            const hit = hitLines.some((l) => WIN_LINES[l].includes(i));
+            return (
+              <div
+                key={i}
+                className={`aspect-square rounded-xl bg-gradient-emerald grid place-items-center text-5xl shadow-emerald border-2 ${
+                  hit ? "border-gold ring-2 ring-gold animate-pulse" : "border-transparent"
+                } ${spinning ? "animate-pulse" : ""}`}
+              >
+                {s}
+              </div>
+            );
+          })}
         </div>
       </div>
       <Button onClick={spin} disabled={spinning} className="w-full bg-gradient-gold shadow-gold h-12 text-lg">
         {spinning ? "Girando..." : "GIRAR 🎰"}
       </Button>
-      <div className="mt-4 grid grid-cols-6 gap-1 text-center text-xs">
-        {SYMBOLS.map((s, i) => {
-          const m = i === 5 ? 20 : i === 4 ? 10 : i === 3 ? 6 : i === 2 ? 4 : i === 1 ? 3 : 2;
-          return (
-            <div key={s} className="bg-secondary rounded p-1">
-              <div className="text-lg">{s}</div>
-              <div className="text-gold font-mono">x{m}</div>
-            </div>
-          );
-        })}
+      <div className="mt-4 text-xs text-muted-foreground text-center">
+        Linhas vencedoras: 3 horizontais + 2 diagonais (↘ ↙)
       </div>
     </GameLayout>
   );

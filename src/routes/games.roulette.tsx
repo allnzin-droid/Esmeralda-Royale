@@ -62,7 +62,7 @@ function Roulette() {
   const color = result !== null && REDS.has(result) ? "bg-destructive" : result === 0 ? "bg-success" : "bg-foreground text-background";
 
   return (
-    <GameLayout title="Roleta" description="Cor/par-ímpar pagam 2x. Número exato 35x." bet={bet} setBet={setBet} disabled={spinning}>
+    <GameLayout title="Roleta" description="Cor 2x. Par/ímpar 1x (devolve a aposta). Número exato 35x." bet={bet} setBet={setBet} disabled={spinning}>
       <div className="grid place-items-center mb-6">
         <div className={`h-32 w-32 rounded-full grid place-items-center font-display text-5xl font-bold border-4 border-gold ${spinning ? "animate-spin-slow" : ""} ${result !== null ? color : "bg-secondary"}`}>
           {spinning ? num : result ?? "?"}
@@ -71,8 +71,8 @@ function Roulette() {
       <div className="grid grid-cols-2 gap-2 mb-3">
         <Button variant={pick.type === "color" && pick.value === "red" ? "default" : "outline"} className={pick.type === "color" && pick.value === "red" ? "bg-destructive" : ""} onClick={() => setPick({ type: "color", value: "red" })} disabled={spinning}>Vermelho 2x</Button>
         <Button variant={pick.type === "color" && pick.value === "black" ? "default" : "outline"} onClick={() => setPick({ type: "color", value: "black" })} disabled={spinning}>Preto 2x</Button>
-        <Button variant={pick.type === "parity" && pick.value === "par" ? "default" : "outline"} onClick={() => setPick({ type: "parity", value: "par" })} disabled={spinning}>Par 2x</Button>
-        <Button variant={pick.type === "parity" && pick.value === "impar" ? "default" : "outline"} onClick={() => setPick({ type: "parity", value: "impar" })} disabled={spinning}>Ímpar 2x</Button>
+        <Button variant={pick.type === "parity" && pick.value === "par" ? "default" : "outline"} onClick={() => setPick({ type: "parity", value: "par" })} disabled={spinning}>Par 1x</Button>
+        <Button variant={pick.type === "parity" && pick.value === "impar" ? "default" : "outline"} onClick={() => setPick({ type: "parity", value: "impar" })} disabled={spinning}>Ímpar 1x</Button>
       </div>
       <div className="text-xs text-muted-foreground mb-2">Ou escolha um número (35x):</div>
       <div className="grid grid-cols-7 sm:grid-cols-12 gap-1 mb-4">
