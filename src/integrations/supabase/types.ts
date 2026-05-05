@@ -32,6 +32,42 @@ export type Database = {
         }
         Relationships: []
       }
+      crash_rounds: {
+        Row: {
+          bet: number
+          cashed_at: number | null
+          crash_point: number
+          created_at: string
+          id: string
+          resolved: boolean
+          resolved_at: string | null
+          user_id: string
+          win: number
+        }
+        Insert: {
+          bet: number
+          cashed_at?: number | null
+          crash_point: number
+          created_at?: string
+          id?: string
+          resolved?: boolean
+          resolved_at?: string | null
+          user_id: string
+          win?: number
+        }
+        Update: {
+          bet?: number
+          cashed_at?: number | null
+          crash_point?: number
+          created_at?: string
+          id?: string
+          resolved?: boolean
+          resolved_at?: string | null
+          user_id?: string
+          win?: number
+        }
+        Relationships: []
+      }
       deposit_requests: {
         Row: {
           amount: number
@@ -248,6 +284,12 @@ export type Database = {
         Args: { _id: string; _pix: string }
         Returns: undefined
       }
+      crash_cashout: {
+        Args: { _at_mult: number; _round_id: string }
+        Returns: Json
+      }
+      crash_reveal: { Args: { _round_id: string }; Returns: Json }
+      crash_start: { Args: { _bet: number }; Returns: Json }
       game_play: {
         Args: { _bet: number; _game: string; _note?: string; _win: number }
         Returns: number
@@ -259,9 +301,8 @@ export type Database = {
         }
         Returns: boolean
       }
-      play_boxes: { Args: { _bet: number; _pick: number }; Returns: Json }
+      play_boxes: { Args: { _bet: number; _count: number }; Returns: Json }
       play_coin: { Args: { _bet: number; _pick: string }; Returns: Json }
-      play_crash: { Args: { _bet: number; _cashout: number }; Returns: Json }
       play_lucky: { Args: { _bet: number }; Returns: Json }
       play_roulette: {
         Args: { _bet: number; _kind: string; _value: string }
