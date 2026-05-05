@@ -104,6 +104,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
+    // Limpa o PIN do admin ao sair
+    const { adminPin } = await import("@/lib/store");
+    adminPin.clear();
     await supabase.auth.signOut();
   };
 
