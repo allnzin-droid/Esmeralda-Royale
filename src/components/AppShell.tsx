@@ -2,6 +2,7 @@ import { Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Coins, LogOut, Shield, Home, MessageSquare } from "lucide-react";
+import logoE from "@/assets/logo-e.png";
 
 export function AppShell() {
   const { user, isAdmin, signOut } = useAuth();
@@ -11,9 +12,13 @@ export function AppShell() {
       <header className="border-b border-border/60 backdrop-blur-md bg-background/70 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 group">
-            <div className="h-9 w-9 rounded-full bg-gradient-gold grid place-items-center shadow-gold group-hover:scale-105 transition">
-              <span className="font-display font-bold text-lg">E</span>
-            </div>
+            <img
+              src={logoE}
+              alt="Esmeralda Royale"
+              width={36}
+              height={36}
+              className="h-9 w-9 rounded-full shadow-gold group-hover:scale-105 transition object-cover"
+            />
             <div className="font-display text-xl text-gold glow-gold">Esmeralda Royale</div>
           </Link>
           <nav className="flex items-center gap-2">

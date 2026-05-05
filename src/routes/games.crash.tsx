@@ -30,7 +30,8 @@ function Crash() {
     setWonAt(null);
     setMult(1.0);
     cashedRef.current = false;
-    const res = await play<StartResult>("crash_start", { _bet: bet });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const res = await play<StartResult>("crash_start" as any, { _bet: bet });
     if (!res) return;
     roundRef.current = res.round_id;
     startRef.current = Date.now();
