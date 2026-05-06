@@ -36,11 +36,12 @@ export function AdminPinGate({ open, onClose, onConfirm, title, description }: P
 
   useEffect(() => {
     if (!open) return;
-    const exists = adminPin.isSet();
-    setHasPin(exists);
-    setMode(exists ? "verify" : "setup");
     setPin("");
     setConfirmPin("");
+    adminPin.refreshIsSet().then((exists) => {
+      setHasPin(exists);
+      setMode(exists ? "verify" : "setup");
+    });
   }, [open]);
 
   const handleSetup = async () => {
