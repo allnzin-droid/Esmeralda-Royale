@@ -51,8 +51,8 @@ export function RequestThread({
                   {m.from === "admin" ? "Admin" : "Usuário"} · {new Date(m.createdAt).toLocaleString()}
                 </div>
                 {m.text && <div className="whitespace-pre-wrap">{m.text}</div>}
-                {m.attachment && (
-                  <a href={m.attachment.dataUrl} download={m.attachment.name} target="_blank" rel="noreferrer" className="mt-2 block">
+                {m.attachment && m.attachment.dataUrl.startsWith("data:") && (
+                  <a href={m.attachment.dataUrl} download={m.attachment.name} target="_blank" rel="noreferrer noopener" className="mt-2 block">
                     {m.attachment.dataUrl.startsWith("data:image") ? (
                       <img src={m.attachment.dataUrl} alt={m.attachment.name} className="max-h-40 rounded border border-border" />
                     ) : (

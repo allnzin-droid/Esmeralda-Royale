@@ -3,126 +3,143 @@ import { useState } from "react";
 import { GameLayout } from "@/components/GameLayout";
 import { Button } from "@/components/ui/button";
 import { usePlay } from "@/lib/games";
-import { useAuth } from "@/lib/auth";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/games/boxes")({ component: Boxes });
 
-type Pick = { mult: number; is_x: boolean };
-type BoxesResult = { picks: Pick[]; has_x: boolean; total_mult: number; win: number; balance: number };
+type StartRes = { round_id: string; target: number; balance: number };
+type PickRes = {
+  mult: number;
+  is_x: boolean;
+  done: boolean;
+  win: number;
+  balance: number;
+  picks: number[];
+  total_mult?: number;
+};
 
 function Boxes() {
-  const { user } = useAuth();
   const [bet, setBet] = useState(1);
-  const [count, setCount] = useState(1);
-  const [reveal, setReveal] = useState<Pick[] | null>(null);
-  const [hasX, setHasX] = useState(false);
+  const [target, setTarget] = useState(1);
+  const [roundId, setRoundId] = useState<string | null>(null);
+  const [opened, setOpened] = useState<Record<number, { mult: number; is_x: boolean }>>({});
   const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState(false);
   const { validateBet, play } = usePlay();
 
-  // Máximo de caixas = min(3, floor(saldo/bet))
-  const maxByBalance = Math.max(0, Math.floor((user?.balance ?? 0) / Math.max(bet, 0.01)));
-  const maxCount = Math.min(3, maxByBalance);
-  const safeCount = Math.min(count, Math.max(maxCount, 1));
-
-  const open = async () => {
+  const start = async () => {
     if (busy) return;
-    if (!validateBet(bet * safeCount)) return;
-    if (safeCount < 1) {
-      toast.error("Saldo insuficiente");
-      return;
-    }
+    if (!validateBet(bet)) return;
     setBusy(true);
-    setReveal(null);
-    setHasX(false);
-    const res = await play<BoxesResult>("play_boxes", { _bet: bet, _count: safeCount });
-    if (!res) {
-      setBusy(false);
+    setOpened({});
+    setDone(false);
+    const res = await play<StartRes>("boxes_start" as never, { _bet: bet, _target: target });
+    setBusy(false);
+    if (!res) return;
+    setRoundId(res.round_id);
+  };
+
+  const pick = async (i: number) => {
+    if (!roundId || busy || done || opened[i]) return;
+    setBusy(true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await supabase.rpc("boxes_pick" as any, { _round_id: roundId, _index: i } as any);
+    setBusy(false);
+    if (error) {
+      toast.error(error.message);
       return;
     }
-    setTimeout(() => {
-      setReveal(res.picks);
-      setHasX(res.has_x);
-      setBusy(false);
-      if (res.has_x) toast.error("💀 Achou o X — perdeu tudo!");
-      else if (res.win > 0) toast.success(`🎁 +${Number(res.win).toFixed(2)} (x${res.total_mult})`);
-      else toast.error("Sem prêmios 😢");
-    }, 600);
+    const r = data as PickRes;
+    setOpened((o) => ({ ...o, [i]: { mult: r.mult, is_x: r.is_x } }));
+    if (r.is_x) {
+      setDone(true);
+      toast.error("💀 X! Você perdeu tudo.");
+    } else if (r.done) {
+      setDone(true);
+      toast.success(`🎁 +${r.win.toFixed(2)} (x${r.total_mult ?? r.mult})`);
+    } else {
+      toast.success(`✓ x${r.mult} — falta ${target - (r.picks?.length ?? 0)}`);
+    }
   };
 
   const reset = () => {
-    setReveal(null);
-    setHasX(false);
+    setRoundId(null);
+    setOpened({});
+    setDone(false);
   };
+
+  const playing = !!roundId && !done;
+  const remaining = target - Object.keys(opened).length;
 
   return (
     <GameLayout
       title="Caixas Premiadas"
-      description="Escolha quantas caixas abrir. Se 1 for X, perde TUDO. Máx 3 (limitado pelo saldo)."
+      description="6 caixas. Escolha sua meta (1-3) e abra UMA POR VEZ. Se achar X antes, perde tudo."
       bet={bet}
       setBet={setBet}
-      disabled={busy}
+      disabled={busy || playing}
     >
       <div className="mb-4 rounded-xl border border-gold/30 bg-card/60 p-4">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-sm text-muted-foreground">Caixas a abrir</span>
-          <span className="text-xs text-gold">Máx pelo saldo: {maxCount}</span>
-        </div>
+        <div className="text-sm text-muted-foreground mb-3">Meta de caixas para abrir</div>
         <div className="flex gap-2">
           {[1, 2, 3].map((n) => (
             <Button
               key={n}
-              variant={safeCount === n ? "default" : "outline"}
-              disabled={busy || n > maxCount}
-              onClick={() => setCount(n)}
-              className={`flex-1 ${safeCount === n ? "bg-gradient-gold" : "border-gold/30"}`}
+              variant={target === n ? "default" : "outline"}
+              disabled={busy || playing}
+              onClick={() => setTarget(n)}
+              className={`flex-1 ${target === n ? "bg-gradient-gold" : "border-gold/30"}`}
             >
               {n} caixa{n > 1 ? "s" : ""}
             </Button>
           ))}
         </div>
-        <div className="mt-3 text-xs text-muted-foreground text-center">
-          Aposta total: <span className="text-gold font-mono">{(bet * safeCount).toFixed(2)}</span>
-        </div>
+        {playing && (
+          <div className="mt-3 text-xs text-center text-gold">
+            Faltam {remaining} para bater a meta — cuidado com o X!
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-3 gap-3 mb-6">
-        {Array.from({ length: 3 }, (_, i) => {
-          const pick = reveal?.[i];
-          const opened = !!pick;
+        {Array.from({ length: 6 }, (_, i) => {
+          const op = opened[i];
           return (
-            <div
+            <button
               key={i}
+              onClick={() => pick(i)}
+              disabled={!playing || !!op || busy}
               className={`aspect-square rounded-2xl border-2 grid place-items-center font-display text-3xl transition-all ${
-                opened
-                  ? pick!.is_x
+                op
+                  ? op.is_x
                     ? "bg-destructive/30 border-destructive"
-                    : "bg-gradient-gold border-gold ring-gold animate-float-up"
-                  : i < safeCount
-                    ? "bg-card border-gold/60"
-                    : "bg-secondary/40 border-border opacity-40"
+                    : "bg-gradient-gold border-gold"
+                  : playing
+                    ? "bg-card border-gold/60 hover:scale-105 hover:border-gold cursor-pointer"
+                    : "bg-secondary/40 border-border opacity-60"
               }`}
             >
-              {opened ? (pick!.is_x ? "💀" : `${pick!.mult}x`) : i < safeCount ? "🎁" : "·"}
-            </div>
+              {op ? (op.is_x ? "💀" : `${op.mult}x`) : "🎁"}
+            </button>
           );
         })}
       </div>
 
-      {!reveal ? (
-        <Button onClick={open} disabled={busy || safeCount < 1} className="w-full bg-gradient-emerald shadow-emerald h-12">
-          {busy ? "Abrindo..." : `Abrir ${safeCount} caixa${safeCount > 1 ? "s" : ""}`}
+      {!playing ? (
+        <Button onClick={start} disabled={busy} className="w-full bg-gradient-emerald shadow-emerald h-12">
+          {busy ? "Iniciando..." : roundId ? "Nova rodada" : `Apostar ${bet.toFixed(2)} (meta ${target})`}
         </Button>
       ) : (
-        <Button onClick={reset} className="w-full bg-gradient-gold shadow-gold h-12">
-          Nova rodada
+        <Button onClick={reset} variant="outline" className="w-full h-12 border-destructive/40 text-destructive">
+          Desistir (perde a aposta)
         </Button>
       )}
 
-      {hasX && (
-        <p className="mt-3 text-center text-destructive text-sm">
-          ⚠️ Uma caixa era X — você perdeu todas as apostas dessa rodada.
-        </p>
+      {done && roundId && (
+        <Button onClick={reset} className="mt-2 w-full bg-gradient-gold shadow-gold h-12">
+          Jogar de novo
+        </Button>
       )}
     </GameLayout>
   );
