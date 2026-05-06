@@ -290,6 +290,7 @@ function AdminPinStatus() {
   const [setupOpen, setSetupOpen] = useState(false);
 
   useEffect(() => {
+    adminPin.refreshIsSet().then(() => force((n) => n + 1));
     const t = setInterval(() => force((n) => n + 1), 30_000);
     return () => clearInterval(t);
   }, []);
@@ -334,11 +335,12 @@ function AdminPinStatus() {
           size="sm"
           variant="outline"
           className="h-7 text-xs border-primary/40 text-primary"
-          onClick={() => {
+          onClick={async () => {
             if (hasPin) {
-              adminPin.clear();
+              await adminPin.clear();
               adminPin.lock();
               toast("PIN removido. Configure um novo.");
+              force((n) => n + 1);
             }
             setSetupOpen(true);
           }}
@@ -349,7 +351,7 @@ function AdminPinStatus() {
       <AdminPinGate
         open={setupOpen}
         onClose={() => setSetupOpen(false)}
-        onConfirm={() => {}}
+        onConfirm={() => force((n) => n + 1)}
         title="Configurar PIN administrativo"
         description="Defina um PIN de 4 dígitos para confirmar aprovações."
       />
