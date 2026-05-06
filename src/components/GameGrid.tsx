@@ -1,14 +1,16 @@
 import { Link } from "@tanstack/react-router";
-import { Coins, Dices, TrendingUp, Package, Cherry, Circle, Sparkles } from "lucide-react";
+import { Coins, Dices, TrendingUp, Package, Cherry, Circle, Sparkles, Trophy, Spade } from "lucide-react";
 
 const games = [
   { id: "tiger", name: "Fortune Tiger 🐯", desc: "Grid 3x3 com diagonais — o tigre paga grande!", icon: Sparkles, to: "/games/tiger" as const },
   { id: "roulette", name: "Roleta", desc: "Aposte em vermelho, preto ou número.", icon: Dices, to: "/games/roulette" as const },
   { id: "lucky", name: "Raspadinha", desc: "Raspe e descubra seu prêmio.", icon: Cherry, to: "/games/lucky" as const },
-  { id: "crash", name: "Crash", desc: "Defina o cash-out antes do colapso.", icon: TrendingUp, to: "/games/crash" as const },
-  { id: "boxes", name: "Caixas Premiadas", desc: "Escolha 1 entre 9 caixas.", icon: Package, to: "/games/boxes" as const },
+  { id: "crash", name: "Crash", desc: "Saque antes do avião explodir.", icon: TrendingUp, to: "/games/crash" as const },
+  { id: "boxes", name: "Caixas Premiadas", desc: "6 caixas — evite o X até bater a meta.", icon: Package, to: "/games/boxes" as const },
   { id: "slots", name: "Caça-Níqueis", desc: "Combine 3 símbolos iguais.", icon: Coins, to: "/games/slots" as const },
   { id: "coin", name: "Cara ou Coroa", desc: "Dobre sua aposta.", icon: Circle, to: "/games/coin" as const },
+  { id: "horses", name: "Corrida de Cavalos 🐎", desc: "Multiplayer 2-6: aposte no cavalo certo.", icon: Trophy, to: "/games/horses" as const },
+  { id: "war", name: "Guerra de Cartas 🃏", desc: "Multiplayer 2-6: maior carta leva o pote.", icon: Spade, to: "/games/war" as const },
 ];
 
 export function GameGrid() {
