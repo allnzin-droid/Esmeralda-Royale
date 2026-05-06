@@ -66,26 +66,28 @@ function Crash() {
 
   useEffect(() => {
     if (!running) return;
+    let stopped = false;
+    let lastCheck = 0;
     const tick = async () => {
+      if (stopped) return;
       const t = (Date.now() - startRef.current) / 1000;
       const m = +Math.pow(1.06, t * 4).toFixed(2);
       setMult(m);
-      // Tenta sacar a cada frame: se ainda não crashou, ganha; se crashou antes, perde.
-      // Mas para detectar o crash, validamos remotamente em intervalos.
       if (m >= 100) {
-        // safety stop
         setRunning(false);
         return;
       }
-      // Verifica crash a cada ~150ms
-      if (Math.floor(t * 1000) % 150 < 30 && roundRef.current && !cashedRef.current) {
+      if (Date.now() - lastCheck > 200 && roundRef.current && !cashedRef.current) {
+        lastCheck = Date.now();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { data } = await supabase.rpc("crash_reveal" as any, { _round_id: roundRef.current } as any);
         const cp = Number((data as { crash_point: number } | null)?.crash_point ?? 0);
         if (cp && m >= cp) {
+          cashedRef.current = true; // bloqueia cashout
           setMult(cp);
           setCrashedAt(cp);
           setRunning(false);
+          stopped = true;
           toast.error(`💥 Crash em ${cp.toFixed(2)}x`);
           return;
         }
@@ -94,6 +96,7 @@ function Crash() {
     };
     rafRef.current = requestAnimationFrame(tick);
     return () => {
+      stopped = true;
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
   }, [running]);
