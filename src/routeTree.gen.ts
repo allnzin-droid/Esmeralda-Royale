@@ -14,10 +14,12 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as GamesWarRouteImport } from './routes/games.war'
 import { Route as GamesTigerRouteImport } from './routes/games.tiger'
 import { Route as GamesSlotsRouteImport } from './routes/games.slots'
 import { Route as GamesRouletteRouteImport } from './routes/games.roulette'
 import { Route as GamesLuckyRouteImport } from './routes/games.lucky'
+import { Route as GamesHorsesRouteImport } from './routes/games.horses'
 import { Route as GamesCrashRouteImport } from './routes/games.crash'
 import { Route as GamesCoinRouteImport } from './routes/games.coin'
 import { Route as GamesBoxesRouteImport } from './routes/games.boxes'
@@ -47,6 +49,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GamesWarRoute = GamesWarRouteImport.update({
+  id: '/games/war',
+  path: '/games/war',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GamesTigerRoute = GamesTigerRouteImport.update({
   id: '/games/tiger',
   path: '/games/tiger',
@@ -65,6 +72,11 @@ const GamesRouletteRoute = GamesRouletteRouteImport.update({
 const GamesLuckyRoute = GamesLuckyRouteImport.update({
   id: '/games/lucky',
   path: '/games/lucky',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GamesHorsesRoute = GamesHorsesRouteImport.update({
+  id: '/games/horses',
+  path: '/games/horses',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GamesCrashRoute = GamesCrashRouteImport.update({
@@ -92,10 +104,12 @@ export interface FileRoutesByFullPath {
   '/games/boxes': typeof GamesBoxesRoute
   '/games/coin': typeof GamesCoinRoute
   '/games/crash': typeof GamesCrashRoute
+  '/games/horses': typeof GamesHorsesRoute
   '/games/lucky': typeof GamesLuckyRoute
   '/games/roulette': typeof GamesRouletteRoute
   '/games/slots': typeof GamesSlotsRoute
   '/games/tiger': typeof GamesTigerRoute
+  '/games/war': typeof GamesWarRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -106,10 +120,12 @@ export interface FileRoutesByTo {
   '/games/boxes': typeof GamesBoxesRoute
   '/games/coin': typeof GamesCoinRoute
   '/games/crash': typeof GamesCrashRoute
+  '/games/horses': typeof GamesHorsesRoute
   '/games/lucky': typeof GamesLuckyRoute
   '/games/roulette': typeof GamesRouletteRoute
   '/games/slots': typeof GamesSlotsRoute
   '/games/tiger': typeof GamesTigerRoute
+  '/games/war': typeof GamesWarRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -121,10 +137,12 @@ export interface FileRoutesById {
   '/games/boxes': typeof GamesBoxesRoute
   '/games/coin': typeof GamesCoinRoute
   '/games/crash': typeof GamesCrashRoute
+  '/games/horses': typeof GamesHorsesRoute
   '/games/lucky': typeof GamesLuckyRoute
   '/games/roulette': typeof GamesRouletteRoute
   '/games/slots': typeof GamesSlotsRoute
   '/games/tiger': typeof GamesTigerRoute
+  '/games/war': typeof GamesWarRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -137,10 +155,12 @@ export interface FileRouteTypes {
     | '/games/boxes'
     | '/games/coin'
     | '/games/crash'
+    | '/games/horses'
     | '/games/lucky'
     | '/games/roulette'
     | '/games/slots'
     | '/games/tiger'
+    | '/games/war'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -151,10 +171,12 @@ export interface FileRouteTypes {
     | '/games/boxes'
     | '/games/coin'
     | '/games/crash'
+    | '/games/horses'
     | '/games/lucky'
     | '/games/roulette'
     | '/games/slots'
     | '/games/tiger'
+    | '/games/war'
   id:
     | '__root__'
     | '/'
@@ -165,10 +187,12 @@ export interface FileRouteTypes {
     | '/games/boxes'
     | '/games/coin'
     | '/games/crash'
+    | '/games/horses'
     | '/games/lucky'
     | '/games/roulette'
     | '/games/slots'
     | '/games/tiger'
+    | '/games/war'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -180,10 +204,12 @@ export interface RootRouteChildren {
   GamesBoxesRoute: typeof GamesBoxesRoute
   GamesCoinRoute: typeof GamesCoinRoute
   GamesCrashRoute: typeof GamesCrashRoute
+  GamesHorsesRoute: typeof GamesHorsesRoute
   GamesLuckyRoute: typeof GamesLuckyRoute
   GamesRouletteRoute: typeof GamesRouletteRoute
   GamesSlotsRoute: typeof GamesSlotsRoute
   GamesTigerRoute: typeof GamesTigerRoute
+  GamesWarRoute: typeof GamesWarRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -223,6 +249,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/games/war': {
+      id: '/games/war'
+      path: '/games/war'
+      fullPath: '/games/war'
+      preLoaderRoute: typeof GamesWarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/games/tiger': {
       id: '/games/tiger'
       path: '/games/tiger'
@@ -249,6 +282,13 @@ declare module '@tanstack/react-router' {
       path: '/games/lucky'
       fullPath: '/games/lucky'
       preLoaderRoute: typeof GamesLuckyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/games/horses': {
+      id: '/games/horses'
+      path: '/games/horses'
+      fullPath: '/games/horses'
+      preLoaderRoute: typeof GamesHorsesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/games/crash': {
@@ -284,11 +324,22 @@ const rootRouteChildren: RootRouteChildren = {
   GamesBoxesRoute: GamesBoxesRoute,
   GamesCoinRoute: GamesCoinRoute,
   GamesCrashRoute: GamesCrashRoute,
+  GamesHorsesRoute: GamesHorsesRoute,
   GamesLuckyRoute: GamesLuckyRoute,
   GamesRouletteRoute: GamesRouletteRoute,
   GamesSlotsRoute: GamesSlotsRoute,
   GamesTigerRoute: GamesTigerRoute,
+  GamesWarRoute: GamesWarRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
