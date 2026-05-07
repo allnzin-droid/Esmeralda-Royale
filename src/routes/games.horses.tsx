@@ -23,6 +23,7 @@ function Horses() {
   const [bets, setBets] = useState<Bet[]>([]);
   const [busy, setBusy] = useState(false);
   const [positions, setPositions] = useState<number[]>([0, 0, 0, 0, 0, 0]);
+  const [takenHorses, setTakenHorses] = useState<number[]>([]);
   const tickRef = useRef<NodeJS.Timeout | null>(null);
 
   const join = async () => {
