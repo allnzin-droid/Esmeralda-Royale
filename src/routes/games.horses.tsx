@@ -41,6 +41,37 @@ function Horses() {
     toast.success(`Entrou na sala — cavalo ${horse}`);
   };
 
+  // Pré-lobby: descobre quais cavalos já estão escolhidos na sala em espera mais antiga
+  useEffect(() => {
+    if (roomId) return;
+    let active = true;
+    const loadTaken = async () => {
+      const { data: rooms } = await supabase
+        .from("horse_rooms")
+        .select("id")
+        .eq("status", "waiting")
+        .order("created_at", { ascending: true })
+        .limit(1);
+      const rid = rooms?.[0]?.id;
+      if (!rid) {
+        if (active) setTakenHorses([]);
+        return;
+      }
+      const { data: b } = await supabase.from("horse_bets").select("horse").eq("room_id", rid);
+      if (active) setTakenHorses((b ?? []).map((x: { horse: number }) => x.horse));
+    };
+    loadTaken();
+    const ch = supabase
+      .channel("horse-lobby")
+      .on("postgres_changes", { event: "*", schema: "public", table: "horse_bets" }, loadTaken)
+      .on("postgres_changes", { event: "*", schema: "public", table: "horse_rooms" }, loadTaken)
+      .subscribe();
+    return () => {
+      active = false;
+      supabase.removeChannel(ch);
+    };
+  }, [roomId]);
+
   // Realtime para sala atual
   useEffect(() => {
     if (!roomId) return;
