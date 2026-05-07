@@ -75,7 +75,7 @@ function Boxes() {
   return (
     <GameLayout
       title="Caixas Premiadas"
-      description="6 caixas. Escolha sua meta (1-3) e abra UMA POR VEZ. Se achar X antes, perde tudo."
+      description="9 caixas (3x3). Escolha sua meta (1-3) e abra UMA POR VEZ. Se achar X antes, perde tudo."
       bet={bet}
       setBet={setBet}
       disabled={busy || playing}
@@ -103,7 +103,7 @@ function Boxes() {
       </div>
 
       <div className="grid grid-cols-3 gap-3 mb-6">
-        {Array.from({ length: 6 }, (_, i) => {
+        {Array.from({ length: 9 }, (_, i) => {
           const op = opened[i];
           return (
             <button
