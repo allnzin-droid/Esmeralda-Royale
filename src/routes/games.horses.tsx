@@ -33,7 +33,12 @@ function Horses() {
     const { data, error } = await supabase.rpc("horse_join" as any, { _bet: bet, _horse: horse } as any);
     setBusy(false);
     if (error) {
-      toast.error(error.message);
+      if (error.message.includes("horse_taken")) {
+        toast.error("Esse cavalo já foi escolhido. Escolha outro.");
+        setTakenHorses((t) => (t.includes(horse) ? t : [...t, horse]));
+      } else {
+        toast.error(error.message);
+      }
       return;
     }
     const r = data as { room_id: string };
