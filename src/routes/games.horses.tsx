@@ -105,23 +105,47 @@ function Horses() {
   const elapsed = room ? Math.floor((Date.now() - new Date(room.created_at).getTime()) / 1000) : 0;
 
   return (
-    <GameLayout title="Corrida de Cavalos 🐎" description="Multi 2-6. Vencedor paga 5x. Auto-start em 30s." bet={bet} setBet={setBet} disabled={busy || !!roomId}>
+    <GameLayout
+      title="Corrida de Cavalos"
+      description="🐎 Multi 2-6. Ganhador leva 65% do pote. Auto-start em 30s."
+      bet={bet}
+      setBet={setBet}
+      disabled={busy || !!roomId}
+      historyGame="Cavalos"
+    >
       {!roomId ? (
         <>
           <div className="mb-4 text-sm text-muted-foreground">Escolha seu cavalo:</div>
           <div className="grid grid-cols-3 gap-2 mb-4">
-            {HORSE_NAMES.map((n, i) => (
-              <Button
-                key={i}
-                variant={horse === i + 1 ? "default" : "outline"}
-                onClick={() => setHorse(i + 1)}
-                className={horse === i + 1 ? "bg-gradient-gold" : "border-gold/30"}
-              >
-                {n}
-              </Button>
-            ))}
+            {HORSE_NAMES.map((n, i) => {
+              const taken = takenHorses.includes(i + 1);
+              return (
+                <Button
+                  key={i}
+                  variant={horse === i + 1 ? "default" : "outline"}
+                  onClick={() => !taken && setHorse(i + 1)}
+                  disabled={taken}
+                  className={
+                    taken
+                      ? "opacity-50 cursor-not-allowed border-border"
+                      : horse === i + 1
+                        ? "bg-gradient-gold"
+                        : "border-gold/30"
+                  }
+                >
+                  {n} {taken && "🔒"}
+                </Button>
+              );
+            })}
           </div>
-          <Button onClick={join} disabled={busy} className="w-full bg-gradient-emerald shadow-emerald h-12">
+          {takenHorses.includes(horse) && (
+            <p className="text-xs text-destructive mb-2">Esse cavalo já foi escolhido. Selecione outro.</p>
+          )}
+          <Button
+            onClick={join}
+            disabled={busy || takenHorses.includes(horse)}
+            className="w-full bg-gradient-emerald shadow-emerald h-12"
+          >
             🐎 Entrar na corrida (R$ {bet.toFixed(2)})
           </Button>
         </>
