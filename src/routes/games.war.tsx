@@ -93,7 +93,7 @@ function War() {
   };
 
   return (
-    <GameLayout title="Guerra de Cartas 🃏" description="Multi 2-6. Carta mais alta divide 90% do pote. Auto-start em 30s." bet={bet} setBet={setBet} disabled={busy || !!roomId}>
+    <GameLayout title="Guerra de Cartas" description="🃏 Multi 2-6. Carta mais alta divide 90% do pote. Auto-start em 30s." bet={bet} setBet={setBet} disabled={busy || !!roomId}>
       {!roomId ? (
         <Button onClick={join} disabled={busy} className="w-full bg-gradient-emerald shadow-emerald h-12">
           🃏 Entrar na mesa (R$ {bet.toFixed(2)})
