@@ -61,7 +61,7 @@ export function GameLayout({
           </Button>
         </div>
       </div>
-      <GameHistory game={title} />
+      <GameHistory game={historyGame ?? title} />
     </div>
   );
 }
