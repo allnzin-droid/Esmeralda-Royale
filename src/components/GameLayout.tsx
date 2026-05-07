@@ -13,6 +13,7 @@ export function GameLayout({
   setBet,
   children,
   disabled,
+  historyGame,
 }: {
   title: string;
   description: string;
@@ -20,6 +21,7 @@ export function GameLayout({
   setBet: (n: number) => void;
   children: ReactNode;
   disabled?: boolean;
+  historyGame?: string;
 }) {
   const { user } = useAuth();
   return (
