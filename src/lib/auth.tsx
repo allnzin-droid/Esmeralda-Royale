@@ -64,23 +64,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => sub.subscription.unsubscribe();
   }, []);
 
-  // Realtime balance updates
+  // Polling de saldo (realtime removido por segurança)
   useEffect(() => {
     if (!session?.user) return;
-    const ch = supabase
-      .channel("balance-" + session.user.id)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "balances", filter: `user_id=eq.${session.user.id}` },
-        (payload) => {
-          const row = payload.new as { amount?: number } | null;
-          if (row && typeof row.amount !== "undefined") setBalance(Number(row.amount));
-        },
-      )
-      .subscribe();
-    return () => {
-      supabase.removeChannel(ch);
-    };
+    const id = setInterval(() => {
+      loadFor(session.user);
+    }, 5000);
+    return () => clearInterval(id);
   }, [session?.user?.id]);
 
   const signUp: AuthCtx["signUp"] = async (email, name, password) => {
