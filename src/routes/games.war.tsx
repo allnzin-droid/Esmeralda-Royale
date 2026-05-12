@@ -115,7 +115,7 @@ function War() {
               return (
                 <div key={b.user_id} className={`flex items-center justify-between gap-3 p-3 rounded-lg border ${isWinner ? "border-gold bg-gold/10" : "border-border bg-secondary/40"}`}>
                   <div className="flex-1">
-                    <div className="text-sm">{isMe ? "Você" : b.user_email?.split("@")[0]}</div>
+                    <div className="text-sm">{isMe ? "Você" : `Jogador ${i + 1}`}</div>
                     <div className="text-xs text-muted-foreground">R$ {Number(b.bet).toFixed(2)}</div>
                   </div>
                   {renderCard(b.card, i)}
