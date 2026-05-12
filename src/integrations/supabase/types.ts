@@ -194,7 +194,6 @@ export type Database = {
           horse: number
           joined_at: string
           room_id: string
-          user_email: string | null
           user_id: string
           win: number
         }
@@ -203,7 +202,6 @@ export type Database = {
           horse: number
           joined_at?: string
           room_id: string
-          user_email?: string | null
           user_id: string
           win?: number
         }
@@ -212,7 +210,6 @@ export type Database = {
           horse?: number
           joined_at?: string
           room_id?: string
-          user_email?: string | null
           user_id?: string
           win?: number
         }
@@ -337,7 +334,6 @@ export type Database = {
           card: number | null
           joined_at: string
           room_id: string
-          user_email: string | null
           user_id: string
           win: number
         }
@@ -346,7 +342,6 @@ export type Database = {
           card?: number | null
           joined_at?: string
           room_id: string
-          user_email?: string | null
           user_id: string
           win?: number
         }
@@ -355,7 +350,6 @@ export type Database = {
           card?: number | null
           joined_at?: string
           room_id?: string
-          user_email?: string | null
           user_id?: string
           win?: number
         }
@@ -487,10 +481,6 @@ export type Database = {
       }
       crash_reveal: { Args: { _round_id: string }; Returns: Json }
       crash_start: { Args: { _bet: number }; Returns: Json }
-      game_play: {
-        Args: { _bet: number; _game: string; _note?: string; _win: number }
-        Returns: number
-      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

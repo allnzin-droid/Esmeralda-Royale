@@ -10,7 +10,7 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/games/horses")({ component: Horses });
 
 type Room = { id: string; status: string; winner: number | null; created_at: string };
-type Bet = { user_id: string; user_email: string | null; horse: number; bet: number; win: number };
+type Bet = { user_id: string; horse: number; bet: number; win: number };
 
 const HORSE_NAMES = ["🟥 1", "🟧 2", "🟨 3", "🟩 4", "🟦 5", "🟪 6"];
 
@@ -209,7 +209,7 @@ function Horses() {
                   <div className="relative h-full px-3 flex items-center justify-between text-sm">
                     <span className="font-display">{n} 🐎</span>
                     <span className="text-xs text-muted-foreground">
-                      {horseBets.length > 0 ? horseBets.map((b) => b.user_email?.split("@")[0]).join(", ") : "—"}
+                      {horseBets.length > 0 ? horseBets.map((b) => (b.user_id === user?.id ? "Você" : `Jogador`)).join(", ") : "—"}
                     </span>
                   </div>
                 </div>
