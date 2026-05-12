@@ -10,7 +10,7 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/games/horses")({ component: Horses });
 
 type Room = { id: string; status: string; winner: number | null; created_at: string };
-type Bet = { user_id: string; user_email: string | null; horse: number; bet: number; win: number };
+type Bet = { user_id: string; horse: number; bet: number; win: number };
 
 const HORSE_NAMES = ["🟥 1", "🟧 2", "🟨 3", "🟩 4", "🟦 5", "🟪 6"];
 
