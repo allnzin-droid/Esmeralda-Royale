@@ -160,17 +160,10 @@ export function useHistory(): HistoryEntry[] {
       );
     };
     load();
-    const ch = supabase
-      .channel("hist-" + user.id)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "history", filter: `user_id=eq.${user.id}` },
-        load,
-      )
-      .subscribe();
+    const iv = setInterval(load, 8000);
     return () => {
       ignore = true;
-      supabase.removeChannel(ch);
+      clearInterval(iv);
     };
   }, [user?.id]);
   return data;
