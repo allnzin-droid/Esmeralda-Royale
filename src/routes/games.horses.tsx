@@ -209,7 +209,7 @@ function Horses() {
                   <div className="relative h-full px-3 flex items-center justify-between text-sm">
                     <span className="font-display">{n} 🐎</span>
                     <span className="text-xs text-muted-foreground">
-                      {horseBets.length > 0 ? horseBets.map((b) => b.user_email?.split("@")[0]).join(", ") : "—"}
+                      {horseBets.length > 0 ? horseBets.map((b) => (b.user_id === user?.id ? "Você" : `Jogador`)).join(", ") : "—"}
                     </span>
                   </div>
                 </div>
