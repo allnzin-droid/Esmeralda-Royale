@@ -123,14 +123,10 @@ export function useWithdrawals(): WithdrawRequest[] {
       );
     };
     load();
-    const ch = supabase
-      .channel("wits-" + user.id)
-      .on("postgres_changes", { event: "*", schema: "public", table: "withdraw_requests" }, load)
-      .on("postgres_changes", { event: "*", schema: "public", table: "request_messages" }, load)
-      .subscribe();
+    const iv = setInterval(load, 5000);
     return () => {
       ignore = true;
-      supabase.removeChannel(ch);
+      clearInterval(iv);
     };
   }, [user?.id, isAdmin]);
 
