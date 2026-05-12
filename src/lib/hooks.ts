@@ -68,14 +68,10 @@ export function useDeposits(): DepositRequest[] {
       );
     };
     load();
-    const ch = supabase
-      .channel("deps-" + user.id)
-      .on("postgres_changes", { event: "*", schema: "public", table: "deposit_requests" }, load)
-      .on("postgres_changes", { event: "*", schema: "public", table: "request_messages" }, load)
-      .subscribe();
+    const iv = setInterval(load, 5000);
     return () => {
       ignore = true;
-      supabase.removeChannel(ch);
+      clearInterval(iv);
     };
   }, [user?.id, isAdmin]);
 
