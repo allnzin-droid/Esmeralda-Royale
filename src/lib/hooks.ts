@@ -191,14 +191,10 @@ export function useUsers(): AdminUserRow[] {
       );
     };
     load();
-    const ch = supabase
-      .channel("users-admin")
-      .on("postgres_changes", { event: "*", schema: "public", table: "balances" }, load)
-      .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, load)
-      .subscribe();
+    const iv = setInterval(load, 6000);
     return () => {
       ignore = true;
-      supabase.removeChannel(ch);
+      clearInterval(iv);
     };
   }, [isAdmin, user?.id]);
   return data;
