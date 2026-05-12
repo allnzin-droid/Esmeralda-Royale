@@ -9,7 +9,7 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/games/war")({ component: War });
 
 type Room = { id: string; status: string; winning_card: number | null; created_at: string };
-type Bet = { user_id: string; user_email: string | null; bet: number; card: number | null; win: number };
+type Bet = { user_id: string; bet: number; card: number | null; win: number };
 
 const SUITS = ["♠", "♥", "♦", "♣"];
 const RANKS = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
