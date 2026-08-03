@@ -1,0 +1,125 @@
+{
+  "version": 1,
+  "sdk_version": "0.26.1",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://cdnzkhkxfmtwkyxeqmmj.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "esmeralda-royale",
+      "version": "0.1.0",
+      "title": "Esmeralda Royale"
+    },
+    "tools": [
+      {
+        "name": "get_balance",
+        "title": "Consultar saldo",
+        "description": "Retorna o saldo virtual atual e o perfil do jogador autenticado.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_history",
+        "title": "Histórico de jogadas",
+        "description": "Lista as jogadas e movimentações mais recentes do jogador autenticado.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "limit": {
+              "description": "Quantas entradas retornar (padrão 20, máximo 100).",
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "game": {
+              "description": "Filtrar por nome do jogo, por exemplo 'Cavalos'.",
+              "type": "string"
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_requests",
+        "title": "Depósitos e saques",
+        "description": "Lista as solicitações de depósito e/ou saque do jogador autenticado.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "kind": {
+              "description": "Tipo de solicitação (padrão 'all').",
+              "type": "string",
+              "enum": [
+                "deposit",
+                "withdraw",
+                "all"
+              ]
+            },
+            "status": {
+              "description": "Filtrar por status, por exemplo 'pending' ou 'approved'.",
+              "type": "string"
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "request_withdraw",
+        "title": "Solicitar saque",
+        "description": "Cria uma solicitação de saque (PIX) para o jogador autenticado. Requer saldo suficiente.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "amount": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "Valor do saque em reais."
+            },
+            "pix_key": {
+              "type": "string",
+              "description": "Chave PIX para receber o valor."
+            }
+          },
+          "required": [
+            "amount",
+            "pix_key"
+          ]
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
