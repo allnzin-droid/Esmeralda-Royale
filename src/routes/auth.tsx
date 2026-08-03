@@ -9,12 +9,23 @@ import { toast } from "sonner";
 import { lovable } from "@/integrations/lovable";
 
 
+function safeNext(value: unknown): string | undefined {
+  if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//")) return undefined;
+  return value;
+}
+
 export const Route = createFileRoute("/auth")({
+  validateSearch: (s: Record<string, unknown>): { next?: string } => {
+    const next = safeNext(s.next);
+    return next ? { next } : {};
+  },
+
   component: AuthPage,
 });
 
 function AuthPage() {
   const { user, signIn, signUp } = useAuth();
+  const { next } = Route.useSearch();
   const nav = useNavigate();
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -22,8 +33,11 @@ function AuthPage() {
   const [googleLoading, setGoogleLoading] = useState(false);
 
   useEffect(() => {
-    if (user) nav({ to: "/dashboard", replace: true });
-  }, [user, nav]);
+    if (!user) return;
+    if (next) window.location.replace(next);
+    else nav({ to: "/dashboard", replace: true });
+  }, [user, next, nav]);
+
 
   const handleIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +56,7 @@ function AuthPage() {
     setGoogleLoading(true);
     try {
       const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
+        redirect_uri: next ? `${window.location.origin}${next}` : window.location.origin,
       });
       if (result.error) {
         toast.error("Falha ao entrar com Google");

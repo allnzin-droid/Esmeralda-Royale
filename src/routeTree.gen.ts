@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as MessagesRouteImport } from './routes/messages'
+import { Route as McpRouteImport } from './routes/mcp'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -23,10 +24,19 @@ import { Route as GamesHorsesRouteImport } from './routes/games.horses'
 import { Route as GamesCrashRouteImport } from './routes/games.crash'
 import { Route as GamesCoinRouteImport } from './routes/games.coin'
 import { Route as GamesBoxesRouteImport } from './routes/games.boxes'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
+import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
+import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 
 const MessagesRoute = MessagesRouteImport.update({
   id: '/messages',
   path: '/messages',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -94,13 +104,39 @@ const GamesBoxesRoute = GamesBoxesRouteImport.update({
   path: '/games/boxes',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const Char91DotmcpChar93ListToolsRoute =
+  Char91DotmcpChar93ListToolsRouteImport.update({
+    id: '/.mcp/list-tools',
+    path: '/.mcp/list-tools',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const Char91DotmcpChar93InvokeToolToolRoute =
+  Char91DotmcpChar93InvokeToolToolRouteImport.update({
+    id: '/.mcp/invoke-tool/$tool',
+    path: '/.mcp/invoke-tool/$tool',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
+  '/mcp': typeof McpRoute
   '/messages': typeof MessagesRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/games/boxes': typeof GamesBoxesRoute
   '/games/coin': typeof GamesCoinRoute
   '/games/crash': typeof GamesCrashRoute
@@ -110,13 +146,18 @@ export interface FileRoutesByFullPath {
   '/games/slots': typeof GamesSlotsRoute
   '/games/tiger': typeof GamesTigerRoute
   '/games/war': typeof GamesWarRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
+  '/mcp': typeof McpRoute
   '/messages': typeof MessagesRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/games/boxes': typeof GamesBoxesRoute
   '/games/coin': typeof GamesCoinRoute
   '/games/crash': typeof GamesCrashRoute
@@ -126,6 +167,8 @@ export interface FileRoutesByTo {
   '/games/slots': typeof GamesSlotsRoute
   '/games/tiger': typeof GamesTigerRoute
   '/games/war': typeof GamesWarRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -133,7 +176,10 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
+  '/mcp': typeof McpRoute
   '/messages': typeof MessagesRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/games/boxes': typeof GamesBoxesRoute
   '/games/coin': typeof GamesCoinRoute
   '/games/crash': typeof GamesCrashRoute
@@ -143,6 +189,8 @@ export interface FileRoutesById {
   '/games/slots': typeof GamesSlotsRoute
   '/games/tiger': typeof GamesTigerRoute
   '/games/war': typeof GamesWarRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -151,7 +199,10 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/dashboard'
+    | '/mcp'
     | '/messages'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/games/boxes'
     | '/games/coin'
     | '/games/crash'
@@ -161,13 +212,18 @@ export interface FileRouteTypes {
     | '/games/slots'
     | '/games/tiger'
     | '/games/war'
+    | '/.lovable/oauth/consent'
+    | '/.mcp/invoke-tool/$tool'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/admin'
     | '/auth'
     | '/dashboard'
+    | '/mcp'
     | '/messages'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/games/boxes'
     | '/games/coin'
     | '/games/crash'
@@ -177,13 +233,18 @@ export interface FileRouteTypes {
     | '/games/slots'
     | '/games/tiger'
     | '/games/war'
+    | '/.lovable/oauth/consent'
+    | '/.mcp/invoke-tool/$tool'
   id:
     | '__root__'
     | '/'
     | '/admin'
     | '/auth'
     | '/dashboard'
+    | '/mcp'
     | '/messages'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/games/boxes'
     | '/games/coin'
     | '/games/crash'
@@ -193,6 +254,8 @@ export interface FileRouteTypes {
     | '/games/slots'
     | '/games/tiger'
     | '/games/war'
+    | '/.lovable/oauth/consent'
+    | '/.mcp/invoke-tool/$tool'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -200,7 +263,10 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
   DashboardRoute: typeof DashboardRoute
+  McpRoute: typeof McpRoute
   MessagesRoute: typeof MessagesRoute
+  Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
+  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   GamesBoxesRoute: typeof GamesBoxesRoute
   GamesCoinRoute: typeof GamesCoinRoute
   GamesCrashRoute: typeof GamesCrashRoute
@@ -210,6 +276,8 @@ export interface RootRouteChildren {
   GamesSlotsRoute: typeof GamesSlotsRoute
   GamesTigerRoute: typeof GamesTigerRoute
   GamesWarRoute: typeof GamesWarRoute
+  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
+  Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -219,6 +287,13 @@ declare module '@tanstack/react-router' {
       path: '/messages'
       fullPath: '/messages'
       preLoaderRoute: typeof MessagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -312,6 +387,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GamesBoxesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.mcp/list-tools': {
+      id: '/.mcp/list-tools'
+      path: '/.mcp/list-tools'
+      fullPath: '/.mcp/list-tools'
+      preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.mcp/invoke-tool/$tool': {
+      id: '/.mcp/invoke-tool/$tool'
+      path: '/.mcp/invoke-tool/$tool'
+      fullPath: '/.mcp/invoke-tool/$tool'
+      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -320,7 +423,11 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
   DashboardRoute: DashboardRoute,
+  McpRoute: McpRoute,
   MessagesRoute: MessagesRoute,
+  Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
+  Char91DotwellKnownChar93OauthProtectedResourceRoute:
+    Char91DotwellKnownChar93OauthProtectedResourceRoute,
   GamesBoxesRoute: GamesBoxesRoute,
   GamesCoinRoute: GamesCoinRoute,
   GamesCrashRoute: GamesCrashRoute,
@@ -330,7 +437,18 @@ const rootRouteChildren: RootRouteChildren = {
   GamesSlotsRoute: GamesSlotsRoute,
   GamesTigerRoute: GamesTigerRoute,
   GamesWarRoute: GamesWarRoute,
+  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
+  Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
